@@ -1,27 +1,36 @@
 body {
-    background-color: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
+  background: #000;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
 }
 #chat {
-    max-width: 600px;
-    margin: auto;
+  border: 1px solid #333;
+  padding: 10px;
+  min-height: 200px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: #1a1a1a;
 }
 .message {
-    background-color: #333;
-    padding: 10px;
-    margin: 5px;
+  background: #333;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
 }
-#message-input {
-    background-color: #444;
-    color: #fff;
-    border: none;
-    padding: 10px;
-    width: 80%;
+input, select, button {
+  background: #222;
+  color: #fff;
+  border: 1px solid #444;
+  padding: 8px;
+  margin: 5px 0;
+  border-radius: 5px;
 }
 button {
-    background-color: #555;
-    color: #fff;
-    border: none;
-    padding: 10px;
+  background: #007bff;
+  cursor: pointer;
+}
+button:hover {
+  background: #0056b3;
 }
