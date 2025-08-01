@@ -1,6 +1,6 @@
 body {
-  background: #0d1117;
-  color: #c9d1d9;
+  background: #0a0e14;
+  color: #d1d5db;
   font-family: 'Inter', Arial, sans-serif;
   margin: 0;
   padding: 20px;
@@ -9,20 +9,42 @@ body {
   align-items: center;
   min-height: 100vh;
 }
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 20px;
+}
+h1 {
+  font-size: 24px;
+  color: #60a5fa;
+  margin: 0;
+}
+.language-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.material-icons {
+  color: #60a5fa;
+  font-size: 24px;
+}
 #chat {
   width: 100%;
   max-width: 800px;
   min-height: 400px;
   max-height: 600px;
   overflow-y: auto;
-  background: #161b22;
+  background: #111827;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
   margin-bottom: 20px;
 }
 .message {
-  background: #2f81f7;
+  background: #3b82f6;
   color: #fff;
   padding: 12px 18px;
   margin: 10px 10px 10px 50px;
@@ -30,12 +52,11 @@ body {
   max-width: 70%;
   word-wrap: break-word;
   animation: slideIn 0.3s ease;
-  position: relative;
-  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
 }
 .message:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 .message img, .message video {
   max-width: 100%;
@@ -43,7 +64,7 @@ body {
   margin-top: 8px;
 }
 .message a {
-  color: #8ed1fc;
+  color: #93c5fd;
   text-decoration: none;
   font-size: 14px;
 }
@@ -52,23 +73,22 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 #language {
-  background: #161b22;
-  color: #c9d1d9;
-  border: 1px solid #30363d;
+  background: #111827;
+  color: #d1d5db;
+  border: 1px solid #374151;
   padding: 10px;
   border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
-  margin-bottom: 15px;
 }
 #language:hover {
-  background: #21262d;
+  background: #1f2937;
 }
 #message-input, #file-input {
-  background: #161b22;
-  color: #c9d1d9;
-  border: 1px solid #30363d;
+  background: #111827;
+  color: #d1d5db;
+  border: 1px solid #374151;
   padding: 12px;
   border-radius: 8px;
   width: 100%;
@@ -76,8 +96,12 @@ body {
   margin: 8px 0;
   font-size: 16px;
 }
+.button-container {
+  display: flex;
+  gap: 10px;
+}
 button {
-  background: #2f81f7;
+  background: #3b82f6;
   color: #fff;
   border: none;
   padding: 12px 24px;
@@ -87,8 +111,14 @@ button {
   transition: background 0.2s, transform 0.1s;
 }
 button:hover {
-  background: #1a6ce8;
+  background: #2563eb;
   transform: scale(1.05);
+}
+.clear-btn {
+  background: #ef4444;
+}
+.clear-btn:hover {
+  background: #dc2626;
 }
 .input-container {
   display: flex;
