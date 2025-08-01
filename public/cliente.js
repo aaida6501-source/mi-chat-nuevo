@@ -58,7 +58,7 @@ document.getElementById('language').addEventListener('change', (e) => {
   document.getElementById('message-input').placeholder = lang === 'es' ? 'Escribe un mensaje' : 'Напишите сообщение';
 });
 
-document.getElementById('emoji-picker').addEventListener('emoji-click', (e) => {
+document.querySelector('emoji-picker').addEventListener('emoji-click', (e) => {
   const input = document.getElementById('message-input');
   input.value += e.detail.unicode;
   document.getElementById('emoji-picker').style.display = 'none';
