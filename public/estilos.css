@@ -8,6 +8,26 @@ body {
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.5;
+  z-index: -1;
+  animation: pulse 10s infinite;
+}
+@keyframes pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+  100% { opacity: 0.3; }
 }
 header {
   display: flex;
@@ -18,9 +38,15 @@ header {
   margin-bottom: 20px;
 }
 h1 {
-  font-size: 24px;
+  font-size: 28px;
   color: #60a5fa;
   margin: 0;
+  animation: glow 2s infinite;
+}
+@keyframes glow {
+  0% { text-shadow: 0 0 5px #60a5fa; }
+  50% { text-shadow: 0 0 20px #60a5fa; }
+  100% { text-shadow: 0 0 5px #60a5fa; }
 }
 .language-container {
   display: flex;
@@ -85,7 +111,22 @@ h1 {
 #language:hover {
   background: #1f2937;
 }
-#message-input, #file-input {
+.message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+#message-input {
+  background: #111827;
+  color: #d1d5db;
+  border: 1px solid #374151;
+  padding: 12px;
+  border-radius: 8px;
+  width: 100%;
+  font-size: 16px;
+}
+#file-input {
   background: #111827;
   color: #d1d5db;
   border: 1px solid #374151;
@@ -95,6 +136,22 @@ h1 {
   max-width: 800px;
   margin: 8px 0;
   font-size: 16px;
+}
+emoji-picker {
+  --background: #111827;
+  --border-color: #374151;
+  --button-active-background: #3b82f6;
+  --button-hover-background: #1f2937;
+}
+.emoji-btn {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+}
+.emoji-btn:hover {
+  background: #1f2937;
 }
 .button-container {
   display: flex;
