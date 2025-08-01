@@ -43,6 +43,11 @@ async function loadMessages() {
   chat.scrollTop = chat.scrollHeight;
 }
 
+function clearMessages() {
+  localStorage.removeItem('messages');
+  loadMessages();
+}
+
 document.getElementById('language').addEventListener('change', (e) => {
   const lang = e.target.value;
   document.getElementById('message-input').placeholder = lang === 'es' ? 'Escribe un mensaje' : 'Напишите сообщение';
