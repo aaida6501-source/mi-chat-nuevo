@@ -7,13 +7,16 @@
   <link rel="stylesheet" href="estilos.css">
 </head>
 <body>
-  <div id="chat"></div>
   <select id="language">
     <option value="es">Español</option>
     <option value="ru">Русский</option>
   </select>
-  <input id="message-input" type="text" placeholder="Escribe un mensaje">
-  <button onclick="sendMessage()">Enviar</button>
+  <div id="chat"></div>
+  <div class="input-container">
+    <input id="message-input" type="text" placeholder="Escribe un mensaje">
+    <input id="file-input" type="file" accept="image/*,video/*,.pdf">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
   <script src="cliente.js"></script>
 </body>
 </html>
