@@ -2,19 +2,16 @@ async function sendMessage() {
   const input = document.getElementById('message-input');
   const message = input.value;
   if (message) {
-    await fetch('/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'text', content: message })
-    });
+    let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+    messages.push({ type: 'text', content: message });
+    localStorage.setItem('messages', JSON.stringify(messages));
     input.value = '';
     loadMessages();
   }
 }
 
 async function loadMessages() {
-  const response = await fetch('/messages');
-  const messages = await response.json();
+  const messages = JSON.parse(localStorage.getItem('messages') || '[]');
   const chat = document.getElementById('chat');
   chat.innerHTML = messages.map(msg => `<div class="message">${msg.content}</div>`).join('');
 }
@@ -24,4 +21,4 @@ document.getElementById('language').addEventListener('change', (e) => {
   document.getElementById('message-input').placeholder = lang === 'es' ? 'Escribe un mensaje' : 'Напишите сообщение';
 });
 
-setInterval(loadMessages, 1000); // Actualiza mensajes cada segundo
+setInterval(loadMessages, 1000);
