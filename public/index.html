@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Chat Épico</title>
+  <title>Chat Ultra Épico</title>
   <link rel="stylesheet" href="estilos.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1"></script>
 </head>
 <body>
   <header>
-    <h1>Mi Chat Épico</h1>
+    <h1>Chat Ultra Épico 🚀</h1>
     <div class="language-container">
       <span class="material-icons">language</span>
       <select id="language">
@@ -20,7 +21,11 @@
   </header>
   <div id="chat"></div>
   <div class="input-container">
-    <input id="message-input" type="text" placeholder="Escribe un mensaje">
+    <div class="message-input-container">
+      <input id="message-input" type="text" placeholder="Escribe un mensaje">
+      <emoji-picker id="emoji-picker" style="display: none;"></emoji-picker>
+      <button onclick="toggleEmojiPicker()" class="emoji-btn"><span class="material-icons">mood</span></button>
+    </div>
     <input id="file-input" type="file" accept="image/*,video/*,.pdf">
     <div class="button-container">
       <button onclick="sendMessage()">Enviar</button>
