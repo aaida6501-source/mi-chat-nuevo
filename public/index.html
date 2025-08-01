@@ -3,19 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mi Chat</title>
+  <title>Mi Chat Épico</title>
   <link rel="stylesheet" href="estilos.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
-  <select id="language">
-    <option value="es">Español</option>
-    <option value="ru">Русский</option>
-  </select>
+  <header>
+    <h1>Mi Chat Épico</h1>
+    <div class="language-container">
+      <span class="material-icons">language</span>
+      <select id="language">
+        <option value="es">Español</option>
+        <option value="ru">Русский</option>
+      </select>
+    </div>
+  </header>
   <div id="chat"></div>
   <div class="input-container">
     <input id="message-input" type="text" placeholder="Escribe un mensaje">
     <input id="file-input" type="file" accept="image/*,video/*,.pdf">
-    <button onclick="sendMessage()">Enviar</button>
+    <div class="button-container">
+      <button onclick="sendMessage()">Enviar</button>
+      <button onclick="clearMessages()" class="clear-btn">Limpiar</button>
+    </div>
   </div>
   <script src="cliente.js"></script>
 </body>
