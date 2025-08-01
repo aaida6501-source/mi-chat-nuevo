@@ -116,6 +116,7 @@ h1 {
   align-items: center;
   gap: 10px;
   width: 100%;
+  position: relative;
 }
 #message-input {
   background: #111827;
@@ -142,6 +143,11 @@ emoji-picker {
   --border-color: #374151;
   --button-active-background: #3b82f6;
   --button-hover-background: #1f2937;
+  position: absolute;
+  bottom: 50px;
+  width: 100%;
+  max-width: 400px;
+  z-index: 1000;
 }
 .emoji-btn {
   background: #111827;
