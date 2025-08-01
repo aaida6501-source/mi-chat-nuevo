@@ -48,9 +48,20 @@ function clearMessages() {
   loadMessages();
 }
 
+function toggleEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+}
+
 document.getElementById('language').addEventListener('change', (e) => {
   const lang = e.target.value;
   document.getElementById('message-input').placeholder = lang === 'es' ? 'Escribe un mensaje' : 'Напишите сообщение';
+});
+
+document.getElementById('emoji-picker').addEventListener('emoji-click', (e) => {
+  const input = document.getElementById('message-input');
+  input.value += e.detail.unicode;
+  document.getElementById('emoji-picker').style.display = 'none';
 });
 
 // Cargar mensajes al iniciar
