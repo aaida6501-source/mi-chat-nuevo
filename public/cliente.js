@@ -31,12 +31,21 @@ async function loadMessages() {
 
   // Cargar mensajes desde la URL
   const urlParams = new URLSearchParams(window.location.search);
-  const sharedMessage = urlParams.get('message');
-  if (sharedMessage) {
-    messages.push({ type: 'text', content: decodeURIComponent(sharedMessage) });
-    localStorage.setItem('messages', JSON.stringify(messages));
-    // Limpiar la URL
-    window.history.replaceState({}, document.title, window.location.pathname);
+  const sharedMessages = urlParams.get('messages');
+  if (sharedMessages) {
+    try {
+      const decodedMessages = JSON.parse(decodeURIComponent(sharedMessages));
+      decodedMessages.forEach(msg => {
+        if (msg.type === 'text') {
+          messages.push({ type: 'text', content: msg.content });
+        }
+      });
+      localStorage.setItem('messages', JSON.stringify(messages));
+      // Limpiar la URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {
+      console.error('Error al decodificar mensajes de la URL:', e);
+    }
   }
 
   const chat = document.getElementById('chat');
@@ -56,11 +65,13 @@ async function loadMessages() {
 
 function copyShareLink() {
   const messages = JSON.parse(localStorage.getItem('messages') || '[]');
-  const lastMessage = messages[messages.length - 1];
-  if (lastMessage && lastMessage.type === 'text') {
-    const shareUrl = `${window.location.origin}?message=${encodeURIComponent(lastMessage.content)}`;
+  const textMessages = messages.filter(msg => msg.type === 'text');
+  if (textMessages.length > 0) {
+    const shareUrl = `${window.location.origin}?messages=${encodeURIComponent(JSON.stringify(textMessages))}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('¡Enlace copiado! Envíalo a alguien para compartir el último mensaje.');
+      alert('¡Enlace copiado! Envíalo a alguien para compartir los mensajes.');
+    }).catch(() => {
+      alert('Error al copiar el enlace. Intenta de nuevo.');
     });
   } else {
     alert('No hay mensajes de texto para compartir.');
