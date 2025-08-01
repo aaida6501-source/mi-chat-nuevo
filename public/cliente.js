@@ -27,7 +27,18 @@ async function sendMessage() {
 }
 
 async function loadMessages() {
-  const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+  let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+
+  // Cargar mensajes desde la URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedMessage = urlParams.get('message');
+  if (sharedMessage) {
+    messages.push({ type: 'text', content: decodeURIComponent(sharedMessage) });
+    localStorage.setItem('messages', JSON.stringify(messages));
+    // Limpiar la URL
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   const chat = document.getElementById('chat');
   chat.innerHTML = messages.map(msg => {
     if (msg.type === 'text') {
@@ -41,6 +52,19 @@ async function loadMessages() {
     }
   }).join('');
   chat.scrollTop = chat.scrollHeight;
+}
+
+function copyShareLink() {
+  const messages = JSON.parse(localStorage.getItem('messages') || '[]');
+  const lastMessage = messages[messages.length - 1];
+  if (lastMessage && lastMessage.type === 'text') {
+    const shareUrl = `${window.location.origin}?message=${encodeURIComponent(lastMessage.content)}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('¡Enlace copiado! Envíalo a alguien para compartir el último mensaje.');
+    });
+  } else {
+    alert('No hay mensajes de texto para compartir.');
+  }
 }
 
 function clearMessages() {
