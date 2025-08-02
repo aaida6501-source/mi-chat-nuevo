@@ -9,7 +9,6 @@ const firebaseConfig = {
   measurementId: "G-KDPCH07QNB"
 };
 
-// Inicializar Firebase
 try {
   firebase.initializeApp(firebaseConfig);
   console.log('Firebase inicializado correctamente');
