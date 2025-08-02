@@ -1,84 +1,90 @@
+// Configuración de Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWt02yyiJQslNo",
+  authDomain: "mi-chat-nuevo.firebaseapp.com",
+  databaseURL: "https://mi-chat-nuevo-default-rtdb.firebaseio.com",
+  projectId: "mi-chat-nuevo",
+  storageBucket: "mi-chat-nuevo.firebasestorage.app",
+  messagingSenderId: "515953371556",
+  appId: "1:515953371556:web:42d679dc708bff411c3931",
+  measurementId: "G-KDPCH07QNB"
+};
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const messagesRef = database.ref('messages');
+
 async function sendMessage() {
   const input = document.getElementById('message-input');
   const fileInput = document.getElementById('file-input');
-  let messages = JSON.parse(localStorage.getItem('messages') || '[]');
 
   // Enviar texto
   if (input.value) {
-    messages.push({ type: 'text', content: input.value });
+    await messagesRef.push({
+      type: 'text',
+      content: input.value,
+      timestamp: Date.now()
+    });
     input.value = '';
   }
 
-  // Enviar archivo
+  // Enviar archivo (guardado localmente)
   if (fileInput.files.length > 0) {
     const file = fileInput.files[0];
     const reader = new FileReader();
     reader.onload = (e) => {
-      messages.push({ type: file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file', content: e.target.result, name: file.name });
+      let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+      messages.push({
+        type: file.type.startsWith('image') ? 'image' : file.type.startsWith('video') ? 'video' : 'file',
+        content: e.target.result,
+        name: file.name
+      });
       localStorage.setItem('messages', JSON.stringify(messages));
-      loadMessages();
+      loadLocalFiles();
     };
     reader.readAsDataURL(file);
     fileInput.value = '';
-  } else {
-    localStorage.setItem('messages', JSON.stringify(messages));
-    loadMessages();
   }
 }
 
-async function loadMessages() {
-  let messages = JSON.parse(localStorage.getItem('messages') || '[]');
+function loadMessages() {
+  messagesRef.on('value', (snapshot) => {
+    const messages = [];
+    snapshot.forEach((childSnapshot) => {
+      messages.push(childSnapshot.val());
+    });
+    const chat = document.getElementById('chat');
+    chat.innerHTML = messages.map(msg => {
+      if (msg.type === 'text') {
+        return `<div class="message">${msg.content}</div>`;
+      }
+    }).join('');
 
-  // Cargar mensajes desde la URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedMessages = urlParams.get('messages');
-  if (sharedMessages) {
-    try {
-      const decodedMessages = JSON.parse(decodeURIComponent(sharedMessages));
-      decodedMessages.forEach(msg => {
-        if (msg.type === 'text') {
-          messages.push({ type: 'text', content: msg.content });
-        }
-      });
-      localStorage.setItem('messages', JSON.stringify(messages));
-      // Limpiar la URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (e) {
-      console.error('Error al decodificar mensajes de la URL:', e);
-    }
-  }
+    // Cargar archivos locales
+    loadLocalFiles();
+    chat.scrollTop = chat.scrollHeight;
+  });
+}
 
+function loadLocalFiles() {
+  const localMessages = JSON.parse(localStorage.getItem('messages') || '[]');
   const chat = document.getElementById('chat');
-  chat.innerHTML = messages.map(msg => {
-    if (msg.type === 'text') {
-      return `<div class="message">${msg.content}</div>`;
-    } else if (msg.type === 'image') {
+  const textMessages = chat.innerHTML;
+  chat.innerHTML = textMessages + localMessages.map(msg => {
+    if (msg.type === 'image') {
       return `<div class="message"><img src="${msg.content}" alt="${msg.name}"></div>`;
     } else if (msg.type === 'video') {
       return `<div class="message"><video src="${msg.content}" controls></video></div>`;
-    } else {
+    } else if (msg.type === 'file') {
       return `<div class="message"><a href="${msg.content}" download="${msg.name}">${msg.name}</a></div>`;
     }
   }).join('');
   chat.scrollTop = chat.scrollHeight;
 }
 
-function copyShareLink() {
-  const messages = JSON.parse(localStorage.getItem('messages') || '[]');
-  const textMessages = messages.filter(msg => msg.type === 'text');
-  if (textMessages.length > 0) {
-    const shareUrl = `${window.location.origin}?messages=${encodeURIComponent(JSON.stringify(textMessages))}`;
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('¡Enlace copiado! Envíalo a alguien para compartir los mensajes.');
-    }).catch(() => {
-      alert('Error al copiar el enlace. Intenta de nuevo.');
-    });
-  } else {
-    alert('No hay mensajes de texto para compartir.');
-  }
-}
-
 function clearMessages() {
+  messagesRef.remove();
   localStorage.removeItem('messages');
   loadMessages();
 }
