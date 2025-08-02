@@ -1,3 +1,4 @@
+// Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWtO2yyiJQslNo",
   authDomain: "mi-chat-nuevo.firebaseapp.com",
@@ -10,29 +11,43 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
-firebase.initializeApp(firebaseConfig);
+try {
+  firebase.initializeApp(firebaseConfig);
+  console.log('Firebase inicializado correctamente');
+} catch (error) {
+  console.error('Error al inicializar Firebase:', error);
+  alert('Error al conectar con Firebase: ' + error.message);
+  return;
+}
+
+// Inicializar Realtime Database
 const database = firebase.database();
 const messagesRef = database.ref('messages');
 
 async function sendMessage() {
   const input = document.getElementById('message-input');
-  if (input && input.value) {
-    try {
-      console.log('Enviando mensaje:', input.value);
-      await messagesRef.push({
-        type: 'text',
-        content: input.value,
-        timestamp: Date.now()
-      });
-      console.log('Mensaje enviado a Firebase');
-      input.value = '';
-    } catch (error) {
-      console.error('Error al enviar mensaje:', error);
-      alert('Error al enviar mensaje: ' + error.message);
-    }
-  } else {
-    console.log('Input vacío o no encontrado');
+  if (!input) {
+    console.error('Input no encontrado');
+    alert('Error: No se encontró el campo de texto');
+    return;
+  }
+  if (!input.value.trim()) {
+    console.log('Input vacío');
     alert('Por favor, escribe un mensaje');
+    return;
+  }
+  try {
+    console.log('Enviando mensaje:', input.value);
+    await messagesRef.push({
+      type: 'text',
+      content: input.value.trim(),
+      timestamp: Date.now()
+    });
+    console.log('Mensaje enviado a Firebase');
+    input.value = '';
+  } catch (error) {
+    console.error('Error al enviar mensaje:', error);
+    alert('Error al enviar mensaje: ' + error.message);
   }
 }
 
@@ -50,11 +65,15 @@ function loadMessages() {
     });
     chat.innerHTML = messages.map(msg => `<div class="message">${msg.content}</div>`).join('');
     chat.scrollTop = chat.scrollHeight;
+    console.log('Mensajes cargados:', messages);
   }, (error) => {
     console.error('Error al cargar mensajes:', error);
     alert('Error al conectar con la base de datos: ' + error.message);
   });
 }
 
-console.log('Inicializando carga de mensajes');
-loadMessages();
+// Inicializar carga de mensajes cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('Inicializando carga de mensajes');
+  loadMessages();
+});
