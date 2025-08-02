@@ -24,8 +24,9 @@ try {
 const database = firebase.database();
 const messagesRef = database.ref('messages');
 
-async function sendMessage() {
+function sendMessage() {
   const input = document.getElementById('message-input');
+  console.log('Botón Enviar clickeado');
   if (!input) {
     console.error('Input no encontrado');
     alert('Error: No se encontró el campo de texto');
@@ -38,13 +39,17 @@ async function sendMessage() {
   }
   try {
     console.log('Enviando mensaje:', input.value);
-    await messagesRef.push({
+    messagesRef.push({
       type: 'text',
       content: input.value.trim(),
       timestamp: Date.now()
+    }).then(() => {
+      console.log('Mensaje enviado a Firebase');
+      input.value = '';
+    }).catch((error) => {
+      console.error('Error al enviar mensaje:', error);
+      alert('Error al enviar mensaje: ' + error.message);
     });
-    console.log('Mensaje enviado a Firebase');
-    input.value = '';
   } catch (error) {
     console.error('Error al enviar mensaje:', error);
     alert('Error al enviar mensaje: ' + error.message);
