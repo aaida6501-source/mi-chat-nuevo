@@ -4,37 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Ultra Épico</title>
-  <link rel="stylesheet" href="estilos.css">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database.js"></script>
+  <style>
+    #chat {
+      border: 1px solid #ccc;
+      height: 400px;
+      overflow-y: scroll;
+      margin-bottom: 10px;
+      padding: 10px;
+    }
+    .message {
+      margin: 5px 0;
+      padding: 5px;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+    }
+    input, button {
+      padding: 5px;
+      margin: 5px;
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Chat Ultra Épico 🚀</h1>
-    <div class="language-container">
-      <span class="material-icons">language</span>
-      <select id="language">
-        <option value="es">Español</option>
-        <option value="ru">Русский</option>
-      </select>
-    </div>
-  </header>
+  <h1>Chat Ultra Épico</h1>
   <div id="chat"></div>
-  <div class="input-container">
-    <div class="message-input-container">
-      <input id="message-input" type="text" placeholder="Escribe un mensaje">
-      <emoji-picker id="emoji-picker" style="display: none;"></emoji-picker>
-      <button onclick="toggleEmojiPicker()" class="emoji-btn"><span class="material-icons">mood</span></button>
-    </div>
-    <input id="file-input" type="file" accept="image/*,video/*,.pdf">
-    <div class="button-container">
-      <button onclick="sendMessage()">Enviar</button>
-      <button onclick="clearMessages()" class="clear-btn">Limpiar</button>
-    </div>
-  </div>
+  <input id="message-input" type="text" placeholder="Escribe un mensaje">
+  <button onclick="sendMessage()">Enviar</button>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
   <script src="cliente.js"></script>
 </body>
 </html>
