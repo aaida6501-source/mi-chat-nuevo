@@ -1,5 +1,6 @@
+// Configuración de Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWt02yyiJQslNo",
+  apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWtO2yyiJQslNo",
   authDomain: "mi-chat-nuevo.firebaseapp.com",
   databaseURL: "https://mi-chat-nuevo-default-rtdb.firebaseio.com",
   projectId: "mi-chat-nuevo",
@@ -9,14 +10,17 @@ const firebaseConfig = {
   measurementId: "G-KDPCH07QNB"
 };
 
+// Inicializar Firebase
 try {
   firebase.initializeApp(firebaseConfig);
   console.log('Firebase inicializado correctamente');
 } catch (error) {
   console.error('Error al inicializar Firebase:', error);
   alert('Error al conectar con Firebase: ' + error.message);
+  return; // Detener ejecución si falla la inicialización
 }
 
+// Inicializar servicios después de Firebase
 const database = firebase.database();
 const storage = firebase.storage();
 const messagesRef = database.ref('messages');
