@@ -177,12 +177,6 @@ button:hover {
   background: #2563eb;
   transform: scale(1.05);
 }
-.share-btn {
-  background: #10b981;
-}
-.share-btn:hover {
-  background: #059669;
-}
 .clear-btn {
   background: #ef4444;
 }
