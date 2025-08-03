@@ -27,8 +27,12 @@
 <body>
   <h1>Chat Ultra Épico</h1>
   <div id="chat"></div>
-  <input id="message-input" type="text" placeholder="Escribe un mensaje">
-  <button onclick="sendMessage()">Enviar</button>
+  <form id="chat-form">
+    <input id="message-input" type="text" placeholder="Escribe un mensaje" required>
+    <button type="submit">Enviar</button>
+  </form>
+  <script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
+  <script>eruda.init();</script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
   <script src="cliente.js"></script>
