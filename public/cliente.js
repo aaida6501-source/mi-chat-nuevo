@@ -1,5 +1,12 @@
 console.log('Cargando cliente.js');
 
+// Verificar si firebase está definido
+if (typeof firebase === 'undefined') {
+  console.error('Firebase no está definido');
+  alert('Error: Firebase no está definido');
+  return;
+}
+
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWtO2yyiJQslNo",
@@ -12,15 +19,18 @@ const firebaseConfig = {
 };
 
 // Inicializar Firebase
+console.log('Inicializando Firebase');
 try {
   firebase.initializeApp(firebaseConfig);
   console.log('Firebase inicializado correctamente');
 } catch (err) {
   console.error('Error al iniciar Firebase:', err);
   alert('Error al iniciar Firebase: ' + err.message);
+  return;
 }
 
 // Inicializar Realtime Database
+console.log('Inicializando Realtime Database');
 const db = firebase.database();
 const messagesRef = db.ref('messages');
 console.log('messagesRef inicializado');
