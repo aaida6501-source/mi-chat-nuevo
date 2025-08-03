@@ -446,13 +446,11 @@
 
     .file-input-wrapper {
       position: relative;
-      overflow: hidden;
       display: inline-block;
     }
 
     .file-input-wrapper input[type=file] {
-      position: absolute;
-      left: -9999px;
+      display: none !important;
     }
 
     .input-container {
@@ -716,18 +714,18 @@
         <!-- Área de carga de archivos -->
         <div class="file-upload-area">
           <div class="file-input-wrapper">
-            <input type="file" id="image-input" accept="image/*" multiple>
-            <button class="btn-file">📷 Fotos</button>
+            <input type="file" id="image-input" accept="image/*" multiple style="display: none;">
+            <button class="btn-file" onclick="document.getElementById('image-input').click()">📷 Fotos</button>
           </div>
           
           <div class="file-input-wrapper">
-            <input type="file" id="document-input" accept=".pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx" multiple>
-            <button class="btn-file">📄 Documentos</button>
+            <input type="file" id="document-input" accept=".pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx" multiple style="display: none;">
+            <button class="btn-file" onclick="document.getElementById('document-input').click()">📄 Documentos</button>
           </div>
           
           <div class="file-input-wrapper">
-            <input type="file" id="file-input" multiple>
-            <button class="btn-file">📎 Archivos</button>
+            <input type="file" id="file-input" multiple style="display: none;">
+            <button class="btn-file" onclick="document.getElementById('file-input').click()">📎 Archivos</button>
           </div>
         </div>
 
@@ -757,4 +755,4 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="cliente.js"></script>
 </body>
-    </html>
+</html>
