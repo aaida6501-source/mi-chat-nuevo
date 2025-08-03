@@ -172,11 +172,15 @@ function initializeFirebase() {
     }
     
     database = firebase.database();
+    console.log('📊 Database referencia creada');
     
     // Verificar conexión
     const connectedRef = database.ref('.info/connected');
     connectedRef.on('value', (snapshot) => {
-      if (snapshot.val() === true) {
+      const connected = snapshot.val();
+      console.log('🌐 Estado de conexión Firebase:', connected);
+      
+      if (connected === true) {
         console.log('🌐 Conectado a Firebase');
         isConnected = true;
         if (currentState === AppState.WELCOME) {
@@ -189,6 +193,19 @@ function initializeFirebase() {
         isConnected = false;
         showStatus('Sin conexión', 'error');
       }
+    });
+    
+    // Test de escritura para verificar permisos
+    const testRef = database.ref('test');
+    testRef.set({
+      timestamp: Date.now(),
+      test: 'connection'
+    }).then(() => {
+      console.log('✅ Test de escritura exitoso');
+      testRef.remove(); // Limpiar test
+    }).catch((error) => {
+      console.error('❌ Error en test de escritura:', error);
+      showStatus('Error de permisos en Firebase', 'error');
     });
     
     return true;
@@ -702,9 +719,13 @@ function escapeHtml(text) {
 function handleJoinRoom(isCreating = false) {
   const usernameInput = document.getElementById('username');
   const roomNameInput = document.getElementById('room-name');
+  const languageSelect = document.getElementById('user-language');
   
   const username = usernameInput.value.trim();
   const roomName = roomNameInput.value.trim();
+  const language = languageSelect ? languageSelect.value : 'es';
+  
+  console.log('🎯 Intentando unirse:', { username, roomName, language });
   
   if (!username) {
     showStatus('Ingresa tu nombre', 'error');
@@ -732,8 +753,13 @@ function handleJoinRoom(isCreating = false) {
   
   showStatus(isCreating ? 'Creando sala...' : 'Uniéndose...', 'info');
   
-  if (joinRoom(roomName, username)) {
-    console.log(`✅ ${isCreating ? 'Sala creada' : 'Unido a sala'} exitosamente`);
+  try {
+    if (joinRoom(roomName, username, language)) {
+      console.log(`✅ ${isCreating ? 'Sala creada' : 'Unido a sala'} exitosamente`);
+    }
+  } catch (error) {
+    console.error('❌ Error al unirse a la sala:', error);
+    showStatus('Error al unirse a la sala', 'error');
   }
 }
 
@@ -756,13 +782,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const createBtn = document.getElementById('create-btn');
   const leaveBtn = document.getElementById('leave-btn');
   const cancelReplyBtn = document.getElementById('cancel-reply');
+  const toggleTranslationBtn = document.getElementById('toggle-translation');
   
   if (joinBtn) {
-    joinBtn.addEventListener('click', () => handleJoinRoom(false));
+    joinBtn.addEventListener('click', () => {
+      console.log('🔘 Botón unirse presionado');
+      handleJoinRoom(false);
+    });
   }
   
   if (createBtn) {
-    createBtn.addEventListener('click', () => handleJoinRoom(true));
+    createBtn.addEventListener('click', () => {
+      console.log('🔘 Botón crear presionado');
+      handleJoinRoom(true);
+    });
   }
   
   if (leaveBtn) {
@@ -773,28 +806,63 @@ document.addEventListener('DOMContentLoaded', () => {
     cancelReplyBtn.addEventListener('click', cancelReply);
   }
   
+  if (toggleTranslationBtn) {
+    toggleTranslationBtn.addEventListener('click', () => {
+      translationEnabled = !translationEnabled;
+      toggleTranslationBtn.classList.toggle('active', translationEnabled);
+      
+      const statusText = document.getElementById('room-status-text');
+      if (statusText) {
+        statusText.textContent = translationEnabled ? 'Traducción activa' : 'Traducción desactivada';
+      }
+      
+      console.log('🌐 Traducción:', translationEnabled ? 'activada' : 'desactivada');
+    });
+  }
+  
   // Inputs de bienvenida
   const usernameInput = document.getElementById('username');
   const roomNameInput = document.getElementById('room-name');
+  const languageSelect = document.getElementById('user-language');
+  
+  console.log('🔧 Elementos encontrados:', {
+    username: !!usernameInput,
+    roomName: !!roomNameInput,
+    language: !!languageSelect
+  });
   
   if (usernameInput) {
     usernameInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        if (roomNameInput) roomNameInput.focus();
+        if (roomNameInput) {
+          roomNameInput.focus();
+        } else {
+          handleJoinRoom(false);
+        }
       }
     });
     
     // Auto-focus después de cargar
-    setTimeout(() => usernameInput.focus(), 1000);
+    setTimeout(() => {
+      usernameInput.focus();
+      console.log('🎯 Focus en username input');
+    }, 1000);
   }
   
   if (roomNameInput) {
     roomNameInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
+        console.log('⏎ Enter presionado en room name');
         handleJoinRoom(false);
       }
+    });
+  }
+  
+  if (languageSelect) {
+    languageSelect.addEventListener('change', (e) => {
+      console.log('🌍 Idioma seleccionado:', e.target.value);
     });
   }
   
