@@ -1,40 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chat Ultra Épico</title>
   <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 1rem; background:#f5f5f5 }
     #chat {
       border: 1px solid #ccc;
-      height: 400px;
+      height: 60vh;
       overflow-y: scroll;
-      margin-bottom: 10px;
-      padding: 10px;
+      margin-bottom: .5rem;
+      padding: .5rem;
+      background:#fff;
+      border-radius: 6px;
     }
     .message {
-      margin: 5px 0;
-      padding: 5px;
-      background-color: #f0f0f0;
-      border-radius: 5px;
+      margin: .25rem 0;
+      padding: .5rem;
+      background:#e6f3ff;
+      border-radius: 6px;
     }
-    input, button {
-      padding: 5px;
-      margin: 5px;
-    }
+    #chat-form { display: flex }
+    #message-input { flex: 1; padding: .5rem }
+    button { padding: .5rem 1rem }
   </style>
 </head>
+
 <body>
   <h1>Chat Ultra Épico</h1>
   <div id="chat"></div>
+
   <form id="chat-form">
-    <input id="message-input" type="text" placeholder="Escribe un mensaje" required>
+    <input id="message-input" type="text" placeholder="Escribe un mensaje" required />
     <button type="submit">Enviar</button>
   </form>
-  <script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
-  <script>eruda.init();</script>
+
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js"></script>
-  <script src="cliente.js"></script>
+
+  <!-- Lógica -->
+  <script>
+    // Configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWtO2yyiJQslNo",
+      authDomain: "mi-chat-nuevo.firebaseapp.com",
+      databaseURL: "https://mi-chat-nuevo-default-rtdb.firebaseio.com",
+      projectId: "mi-chat-nuevo",
+      storageBucket: "mi-chat-nuevo.firebasestorage.app",
+      messagingSenderId: "515953371556",
+      appId: "1:515953371556:web:42d679dc708bff411c3931"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const messagesRef = db.ref('messages');
+
+    // Enviar mensaje
+    document.getElementById('chat-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const input = document.getElementById('message-input');
+      const text = input.value.trim();
+      if (!text) return alert('Escribe algo 😊');
+
+      messagesRef
+        .push({ content: text, timestamp: Date.now() })
+        .then(() => (input.value = ''))
+        .catch(err => alert('Error al enviar: ' + err.message));
+    });
+
+    // Escuchar mensajes
+    messagesRef.limitToLast(50).on('value', snap => {
+      const chat = document.getElementById('chat');
+      chat.innerHTML = '';
+      snap.forEach(child => {
+        const msg = child.val();
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.textContent = msg.content;
+        chat.appendChild(div);
+      });
+      chat.scrollTop = chat.scrollHeight;
+    });
+  </script>
 </body>
 </html>
+
