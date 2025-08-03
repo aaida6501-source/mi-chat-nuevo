@@ -3,756 +3,203 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Ultra Épico - Dark Mode</title>
+  <title>Chat Ultra Épico Dark Mode</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
-      min-height: 100vh;
-      padding: 10px;
-      color: #ffffff;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: #1e1e2e;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      overflow: hidden;
-      border: 1px solid #333;
-    }
-
-    .header {
-      background: linear-gradient(45deg, #6366f1, #8b5cf6, #ec4899);
-      color: white;
+      font-family: Arial, sans-serif;
+      margin: 0;
       padding: 20px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.1);
-      z-index: 1;
-    }
-
-    .header h1, .header p {
-      position: relative;
-      z-index: 2;
-    }
-
-    .header h1 {
-      font-size: 2rem;
-      margin-bottom: 5px;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .header p {
-      opacity: 0.9;
-      font-size: 0.9rem;
-    }
-
-    /* Pantalla de bienvenida */
-    .welcome-screen {
-      padding: 30px;
-      text-align: center;
-      background: #1e1e2e;
-    }
-
-    .welcome-screen h2 {
-      color: #ffffff;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
-    }
-
-    .input-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
-
-    .input-group label {
-      display: block;
-      margin-bottom: 8px;
-      color: #b3b3b3;
-      font-weight: bold;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #404040;
-      border-radius: 25px;
-      font-size: 16px;
-      outline: none;
-      transition: all 0.3s;
-      background: #2a2a3a;
+      background-color: #121212;
       color: #ffffff;
     }
-
-    .input-group input:focus {
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
-      background: #333344;
+    #welcome-screen, #chat-screen {
+      max-width: 600px;
+      margin: auto;
     }
-
-    .input-group input::placeholder {
-      color: #888;
-    }
-
-    .btn {
-      background: linear-gradient(45deg, #6366f1, #8b5cf6);
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 25px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin: 5px;
-      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
-
-    .btn-secondary {
-      background: linear-gradient(45deg, #ec4899, #f59e0b);
-    }
-
-    .btn-file {
-      background: linear-gradient(45deg, #10b981, #059669);
-      padding: 8px 16px;
-      font-size: 14px;
-      margin: 0 5px;
-    }
-
-    /* Pantalla del chat */
-    .chat-screen {
+    #chat-screen {
       display: none;
-      height: 600px;
-      display: flex;
       flex-direction: column;
-      background: #1e1e2e;
+      gap: 10px;
     }
-
-    .chat-header {
-      background: #2a2a3a;
-      padding: 15px 20px;
-      border-bottom: 1px solid #404040;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .room-info h3 {
-      color: #ffffff;
-      margin-bottom: 5px;
-    }
-
-    .room-info span {
-      color: #b3b3b3;
-      font-size: 0.9rem;
-    }
-
-    .participants {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-    }
-
-    .participant {
-      background: #6366f1;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-    }
-
-    .participant.you {
-      background: #ec4899;
-    }
-
-    .chat-messages {
-      flex: 1;
+    #chat-messages {
+      border: 1px solid #333;
+      height: 400px;
       overflow-y: auto;
-      padding: 20px;
-      background: #1a1a2a;
+      padding: 10px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
     }
-
     .message {
-      margin-bottom: 15px;
-      padding: 12px 15px;
-      border-radius: 15px;
-      max-width: 80%;
-      word-wrap: break-word;
-      animation: slideIn 0.3s ease;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.3s;
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #2a2a2a;
     }
-
-    .message:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    }
-
     .message.own {
-      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      background-color: #1a73e8;
+      margin-left: 20%;
       color: white;
-      margin-left: auto;
-      border-bottom-right-radius: 5px;
     }
-
     .message.other {
-      background: #2a2a3a;
-      border: 1px solid #404040;
-      border-bottom-left-radius: 5px;
-      color: #ffffff;
+      background-color: #333;
+      margin-right: 20%;
     }
-
-    .message.other:hover {
-      border-color: #6366f1;
-      background: #333344;
-    }
-
-    .message.file {
-      padding: 15px;
-    }
-
-    .file-preview {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 10px;
-      margin: 8px 0;
-    }
-
-    .file-icon {
-      font-size: 2rem;
-      min-width: 40px;
-      text-align: center;
-    }
-
-    .file-info {
-      flex: 1;
-    }
-
-    .file-name {
-      font-weight: bold;
-      margin-bottom: 4px;
-      color: #ffffff;
-    }
-
-    .file-size {
-      font-size: 0.8rem;
-      color: #b3b3b3;
-    }
-
-    .file-download {
-      background: #10b981;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .file-download:hover {
-      background: #059669;
-      transform: scale(1.05);
-    }
-
-    .image-preview {
-      max-width: 200px;
-      max-height: 200px;
-      border-radius: 10px;
-      margin: 8px 0;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .image-preview:hover {
-      transform: scale(1.05);
-    }
-
-    .message-header {
-      font-size: 0.8rem;
-      opacity: 0.8;
-      margin-bottom: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: #b3b3b3;
-    }
-
-    .reply-btn {
-      background: rgba(99, 102, 241, 0.8);
-      border: none;
-      color: white;
-      padding: 4px 8px;
-      border-radius: 10px;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0;
-      transition: all 0.2s;
-    }
-
-    .message.other .reply-btn {
-      background: #6366f1;
-    }
-
-    .message:hover .reply-btn {
-      opacity: 1;
-    }
-
-    .reply-btn:hover {
-      transform: scale(1.05);
-      background: #5855eb;
-    }
-
-    .message-content {
-      font-size: 1rem;
-      line-height: 1.4;
-      color: #ffffff;
-    }
-
-    .message-time {
-      font-size: 0.7rem;
-      opacity: 0.6;
-      margin-top: 5px;
-      color: #888;
-    }
-
-    /* Mensajes citados/respuestas */
-    .quoted-message {
-      background: rgba(0,0,0,0.3);
-      border-left: 3px solid #6366f1;
-      padding: 8px 12px;
-      margin-bottom: 8px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      position: relative;
-    }
-
-    .message.own .quoted-message {
-      background: rgba(255,255,255,0.2);
-      border-left-color: #ffffff;
-    }
-
-    .quoted-author {
-      font-weight: bold;
-      font-size: 0.8rem;
-      margin-bottom: 4px;
-      opacity: 0.8;
-      color: #b3b3b3;
-    }
-
-    .quoted-content {
-      opacity: 0.9;
-      font-style: italic;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      color: #cccccc;
-    }
-
-    .chat-input {
-      padding: 20px;
-      background: #2a2a3a;
-      border-top: 1px solid #404040;
-    }
-
-    /* Preview de respuesta */
-    .reply-preview {
-      display: none;
-      background: #333344;
-      padding: 10px 15px;
-      border-left: 3px solid #6366f1;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      position: relative;
-    }
-
-    .reply-preview.active {
-      display: block;
-    }
-
-    .reply-preview-header {
-      font-size: 0.8rem;
-      color: #b3b3b3;
-      margin-bottom: 5px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .reply-preview-content {
-      font-size: 0.9rem;
-      color: #ffffff;
-      font-style: italic;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .cancel-reply {
-      background: none;
-      border: none;
-      color: #888;
-      cursor: pointer;
-      padding: 2px 6px;
-      border-radius: 10px;
-      font-size: 0.8rem;
-      transition: all 0.2s;
-    }
-
-    .cancel-reply:hover {
-      background: #404040;
-      color: #ffffff;
-    }
-
-    /* Área de archivos */
-    .file-upload-area {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-
-    .file-input-wrapper {
-      position: relative;
-      display: inline-block;
-    }
-
-    .file-input-wrapper input[type=file] {
-      display: none !important;
-    }
-
-    .input-container {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .input-container input {
-      flex: 1;
-      padding: 12px 20px;
-      border: 2px solid #404040;
-      border-radius: 25px;
-      font-size: 16px;
-      outline: none;
-      background: #333344;
-      color: #ffffff;
-      transition: all 0.3s;
-      min-width: 200px;
-    }
-
-    .input-container input:focus {
-      border-color: #6366f1;
-      background: #404055;
-    }
-
-    .input-container input::placeholder {
-      color: #888;
-    }
-
-    .input-container input.replying {
-      border-color: #6366f1;
-      background: #404055;
-    }
-
-    .status {
-      text-align: center;
-      padding: 10px;
-      margin: 10px 20px;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-
-    .status.success {
-      background: #065f46;
-      color: #a7f3d0;
-      border: 1px solid #047857;
-    }
-
-    .status.error {
-      background: #7f1d1d;
-      color: #fca5a5;
-      border: 1px solid #991b1b;
-    }
-
-    .status.info {
-      background: #1e3a8a;
-      color: #93c5fd;
-      border: 1px solid #1d4ed8;
-    }
-
-    /* Scrollbar personalizada */
-    .chat-messages::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    .chat-messages::-webkit-scrollbar-track {
-      background: #1a1a2a;
-    }
-
-    .chat-messages::-webkit-scrollbar-thumb {
-      background: #404040;
-      border-radius: 4px;
-    }
-
-    .chat-messages::-webkit-scrollbar-thumb:hover {
-      background: #6366f1;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .btn-leave {
-      background: #dc2626;
-      font-size: 0.9rem;
-      padding: 8px 15px;
-    }
-
-    .btn-leave:hover {
-      background: #b91c1c;
-    }
-
     .system-message {
       text-align: center;
       color: #888;
       font-style: italic;
-      font-size: 0.9rem;
-      margin: 10px 0;
-      padding: 8px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
     }
-
-    /* Indicador de respuesta en input */
-    .input-reply-indicator {
-      position: absolute;
-      left: 25px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6366f1;
-      font-size: 0.9rem;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.2s;
+    .message-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8em;
     }
-
-    .input-container.replying .input-reply-indicator {
-      opacity: 1;
+    .message-time {
+      font-size: 0.7em;
+      color: #aaa;
     }
-
-    .input-container.replying input {
-      padding-left: 45px;
+    .quoted-message {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 5px;
+      margin-bottom: 5px;
+      border-left: 3px solid #1a73e8;
+      font-size: 0.9em;
     }
-
-    /* Modal para vista de imagen completa */
-    .image-modal {
+    .file-preview {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .file-icon {
+      font-size: 1.5em;
+    }
+    .file-download {
+      background-color: #1a73e8;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .image-preview {
+      max-width: 100%;
+      max-height: 200px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #image-modal {
       display: none;
       position: fixed;
-      z-index: 1000;
-      left: 0;
       top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.9);
-      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.8);
       align-items: center;
+      justify-content: center;
+      z-index: 1000;
     }
-
-    .image-modal.active {
+    #image-modal.active {
       display: flex;
     }
-
-    .image-modal img {
+    #modal-image {
       max-width: 90%;
       max-height: 90%;
-      border-radius: 10px;
     }
-
-    .image-modal .close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #reply-preview {
+      display: none;
+      background-color: #2a2a2a;
+      padding: 10px;
+      border-radius: 5px;
+      border-left: 3px solid #1a73e8;
+    }
+    #reply-preview.active {
+      display: block;
+    }
+    #message-form {
+      display: flex;
+      gap: 10px;
+    }
+    input[type="text"], button {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #333;
+      background-color: #2a2a2a;
       color: white;
-      font-size: 2rem;
+    }
+    button {
+      background-color: #1a73e8;
       cursor: pointer;
     }
-
-    @media (max-width: 600px) {
-      .container {
-        border-radius: 0;
-        min-height: 100vh;
-      }
-      
-      .chat-screen {
-        height: calc(100vh - 140px);
-      }
-      
-      .participants {
-        max-width: 200px;
-        overflow-x: auto;
-      }
-      
-      .message {
-        max-width: 90%;
-      }
-
-      .reply-btn {
-        opacity: 1;
-      }
-
-      .file-upload-area {
-        justify-content: center;
-      }
-
-      .input-container {
-        flex-direction: column;
-        gap: 10px;
-      }
-
-      .input-container input {
-        min-width: auto;
-        width: 100%;
-      }
+    #participants-list {
+      padding: 10px;
+      background-color: #1e1e1e;
+      border-radius: 8px;
     }
+    .participant {
+      padding: 5px;
+      font-size: 0.9em;
+    }
+    .participant.you {
+      color: #1a73e8;
+    }
+    #status {
+      text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .status.info { background-color: #2a2a2a; }
+    .status.success { background-color: #1a4d2e; }
+    .status.error { background-color: #4d1a1a; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>🚀 Chat Ultra Épico 🚀</h1>
-      <p>Salas, respuestas y archivos en modo oscuro</p>
+  <div id="welcome-screen">
+    <h1>Chat Ultra Épico Dark Mode</h1>
+    <div id="status" class="status info"></div>
+    <input id="username" type="text" placeholder="Tu nombre">
+    <input id="room-name" type="text" placeholder="Nombre de la sala">
+    <button id="join-btn">Unirse a Sala</button>
+    <button id="create-btn">Crear Sala</button>
+  </div>
+  <div id="chat-screen">
+    <h2 id="current-room">Sala: </h2>
+    <div id="participant-count">Participantes: 0</div>
+    <div id="participants-list"></div>
+    <div id="chat-messages"></div>
+    <div id="status" class="status info"></div>
+    <div id="reply-preview">
+      <div>Respondiendo a <span id="reply-to-user"></span></div>
+      <div id="reply-preview-content"></div>
+      <button id="cancel-reply">✖️ Cancelar</button>
     </div>
-
-    <div id="status" class="status info">Conectando...</div>
-
-    <!-- Pantalla de Bienvenida -->
-    <div id="welcome-screen" class="welcome-screen">
-      <h2>¡Bienvenido al Chat!</h2>
-      
-      <div class="input-group">
-        <label for="username">👤 Tu nombre:</label>
-        <input id="username" type="text" placeholder="Ingresa tu nombre" maxlength="20" autocomplete="off">
-      </div>
-
-      <div class="input-group">
-        <label for="room-name">🏠 Nombre de la sala:</label>
-        <input id="room-name" type="text" placeholder="Ingresa o crea una sala" maxlength="30" autocomplete="off">
-      </div>
-
-      <button id="join-btn" class="btn">🚀 Unirse al Chat</button>
-      <button id="create-btn" class="btn btn-secondary">➕ Crear Sala Nueva</button>
-    </div>
-
-    <!-- Pantalla del Chat -->
-    <div id="chat-screen" class="chat-screen">
-      <div class="chat-header">
-        <div class="room-info">
-          <h3 id="current-room">Sala: </h3>
-          <span id="participant-count">Participantes: 0</span>
-        </div>
-        <div>
-          <div class="participants" id="participants-list"></div>
-          <button id="leave-btn" class="btn btn-leave">🚪 Salir</button>
-        </div>
-      </div>
-
-      <div id="chat-messages" class="chat-messages">
-        <div class="system-message">¡Bienvenido! Escribe mensajes, comparte archivos o responde a otros 💬📎</div>
-      </div>
-
-      <div class="chat-input">
-        <!-- Preview de respuesta -->
-        <div id="reply-preview" class="reply-preview">
-          <div class="reply-preview-header">
-            <span>📝 Respondiendo a <strong id="reply-to-user"></strong></span>
-            <button id="cancel-reply" class="cancel-reply">❌ Cancelar</button>
-          </div>
-          <div id="reply-preview-content" class="reply-preview-content"></div>
-        </div>
-
-        <!-- Área de carga de archivos -->
-        <div class="file-upload-area">
-          <div class="file-input-wrapper">
-            <input type="file" id="image-input" accept="image/*" multiple style="display: none;">
-            <button class="btn-file" onclick="document.getElementById('image-input').click()">📷 Fotos</button>
-          </div>
-          
-          <div class="file-input-wrapper">
-            <input type="file" id="document-input" accept=".pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx" multiple style="display: none;">
-            <button class="btn-file" onclick="document.getElementById('document-input').click()">📄 Documentos</button>
-          </div>
-          
-          <div class="file-input-wrapper">
-            <input type="file" id="file-input" multiple style="display: none;">
-            <button class="btn-file" onclick="document.getElementById('file-input').click()">📎 Archivos</button>
-          </div>
-        </div>
-
-        <form id="message-form" class="input-container">
-          <div class="input-reply-indicator">↳</div>
-          <input 
-            id="message-input" 
-            type="text" 
-            placeholder="Escribe tu mensaje..." 
-            maxlength="500"
-            autocomplete="off"
-          >
-          <button id="send-button" type="submit" class="btn">Enviar 🚀</button>
-        </form>
+    <div class="input-container">
+      <form id="message-form">
+        <input id="message-input" type="text" placeholder="Escribe tu mensaje...">
+        <button id="send-button" type="submit">Enviar 🚀</button>
+      </form>
+      <input id="image-input" type="file" accept="image/*" style="display: none;">
+      <input id="document-input" type="file" accept=".pdf,.doc,.docx,.txt" style="display: none;">
+      <input id="file-input" type="file" style="display: none;">
+      <div>
+        <button onclick="document.getElementById('image-input').click()">📷 Imagen</button>
+        <button onclick="document.getElementById('document-input').click()">📄 Documento</button>
+        <button onclick="document.getElementById('file-input').click()">📎 Archivo</button>
       </div>
     </div>
   </div>
-
-  <!-- Modal para imágenes -->
-  <div id="image-modal" class="image-modal">
-    <span class="close" onclick="closeImageModal()">&times;</span>
-    <img id="modal-image" src="" alt="Imagen completa">
+  <div id="image-modal">
+    <img id="modal-image" src="">
   </div>
-
-  <!-- Firebase v8 Scripts -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="cliente.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda@3.0.1/eruda.min.js"></script>
+  <script>eruda.init();</script>
+  <script src="cliente.js" defer></script>
 </body>
 </html>
