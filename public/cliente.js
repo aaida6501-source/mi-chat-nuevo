@@ -1,3 +1,5 @@
+console.log('Cargando cliente.js');
+
 // Configuración de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAdUyhfVnofaTcxlERnuAWtO2yyiJQslNo",
@@ -6,79 +8,67 @@ const firebaseConfig = {
   projectId: "mi-chat-nuevo",
   storageBucket: "mi-chat-nuevo.firebasestorage.app",
   messagingSenderId: "515953371556",
-  appId: "1:515953371556:web:42d679dc708bff411c3931",
-  measurementId: "G-KDPCH07QNB"
+  appId: "1:515953371556:web:42d679dc708bff411c3931"
 };
 
 // Inicializar Firebase
 try {
   firebase.initializeApp(firebaseConfig);
   console.log('Firebase inicializado correctamente');
-} catch (error) {
-  console.error('Error al inicializar Firebase:', error);
-  alert('Error al conectar con Firebase: ' + error.message);
-  return;
+} catch (err) {
+  console.error('Error al iniciar Firebase:', err);
+  alert('Error al iniciar Firebase: ' + err.message);
 }
 
 // Inicializar Realtime Database
-const database = firebase.database();
-const messagesRef = database.ref('messages');
+const db = firebase.database();
+const messagesRef = db.ref('messages');
+console.log('messagesRef inicializado');
 
-function sendMessage() {
+// Enviar mensaje
+document.getElementById('chat-form').addEventListener('submit', e => {
+  e.preventDefault();
+  console.log('Formulario enviado');
   const input = document.getElementById('message-input');
-  console.log('Botón Enviar clickeado');
-  if (!input) {
-    console.error('Input no encontrado');
-    alert('Error: No se encontró el campo de texto');
-    return;
-  }
-  if (!input.value.trim()) {
+  const text = input.value.trim();
+  if (!text) {
     console.log('Input vacío');
-    alert('Por favor, escribe un mensaje');
+    alert('Escribe algo 😊');
     return;
   }
-  try {
-    console.log('Enviando mensaje:', input.value);
-    messagesRef.push({
-      type: 'text',
-      content: input.value.trim(),
-      timestamp: Date.now()
-    }).then(() => {
+  console.log('Enviando mensaje:', text);
+  messagesRef
+    .push({ content: text, timestamp: Date.now() })
+    .then(() => {
       console.log('Mensaje enviado a Firebase');
       input.value = '';
-    }).catch((error) => {
-      console.error('Error al enviar mensaje:', error);
-      alert('Error al enviar mensaje: ' + error.message);
+    })
+    .catch(err => {
+      console.error('Error al enviar:', err);
+      alert('Error al enviar: ' + err.message);
     });
-  } catch (error) {
-    console.error('Error al enviar mensaje:', error);
-    alert('Error al enviar mensaje: ' + error.message);
-  }
-}
+});
 
-function loadMessages() {
+// Escuchar mensajes
+messagesRef.limitToLast(50).on('value', snap => {
+  console.log('Actualizando mensajes');
   const chat = document.getElementById('chat');
   if (!chat) {
     console.error('Elemento #chat no encontrado');
     alert('Error: No se encontró el contenedor del chat');
     return;
   }
-  messagesRef.limitToLast(50).on('value', (snapshot) => {
-    const messages = [];
-    snapshot.forEach((childSnapshot) => {
-      messages.push(childSnapshot.val());
-    });
-    chat.innerHTML = messages.map(msg => `<div class="message">${msg.content}</div>`).join('');
-    chat.scrollTop = chat.scrollHeight;
-    console.log('Mensajes cargados:', messages);
-  }, (error) => {
-    console.error('Error al cargar mensajes:', error);
-    alert('Error al conectar con la base de datos: ' + error.message);
+  chat.innerHTML = '';
+  snap.forEach(child => {
+    const msg = child.val();
+    const div = document.createElement('div');
+    div.className = 'message';
+    div.textContent = msg.content;
+    chat.appendChild(div);
   });
-}
-
-// Inicializar carga de mensajes cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('Inicializando carga de mensajes');
-  loadMessages();
+  chat.scrollTop = chat.scrollHeight;
+  console.log('Mensajes cargados');
+}, err => {
+  console.error('Error al cargar mensajes:', err);
+  alert('Error al cargar mensajes: ' + err.message);
 });
