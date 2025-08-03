@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat Ultra Épico - Salas</title>
+  <title>Chat Ultra Épico - Dark Mode</title>
   <style>
     * {
       margin: 0;
@@ -13,30 +13,51 @@
     
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
       min-height: 100vh;
       padding: 10px;
+      color: #ffffff;
     }
 
     .container {
       max-width: 800px;
       margin: 0 auto;
-      background: white;
+      background: #1e1e2e;
       border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       overflow: hidden;
+      border: 1px solid #333;
     }
 
     .header {
-      background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+      background: linear-gradient(45deg, #6366f1, #8b5cf6, #ec4899);
       color: white;
       padding: 20px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.1);
+      z-index: 1;
+    }
+
+    .header h1, .header p {
+      position: relative;
+      z-index: 2;
     }
 
     .header h1 {
       font-size: 2rem;
       margin-bottom: 5px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
 
     .header p {
@@ -48,10 +69,11 @@
     .welcome-screen {
       padding: 30px;
       text-align: center;
+      background: #1e1e2e;
     }
 
     .welcome-screen h2 {
-      color: #333;
+      color: #ffffff;
       margin-bottom: 20px;
       font-size: 1.5rem;
     }
@@ -64,40 +86,48 @@
     .input-group label {
       display: block;
       margin-bottom: 8px;
-      color: #555;
+      color: #b3b3b3;
       font-weight: bold;
     }
 
     .input-group input {
       width: 100%;
       padding: 12px 15px;
-      border: 2px solid #e1e8ed;
+      border: 2px solid #404040;
       border-radius: 25px;
       font-size: 16px;
       outline: none;
-      transition: border-color 0.3s;
+      transition: all 0.3s;
+      background: #2a2a3a;
+      color: #ffffff;
     }
 
     .input-group input:focus {
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+      background: #333344;
+    }
+
+    .input-group input::placeholder {
+      color: #888;
     }
 
     .btn {
-      background: linear-gradient(45deg, #667eea, #764ba2);
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
       color: white;
       border: none;
       padding: 12px 30px;
       border-radius: 25px;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s;
       margin: 5px;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
     }
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
     }
 
     .btn:active {
@@ -105,7 +135,14 @@
     }
 
     .btn-secondary {
-      background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+      background: linear-gradient(45deg, #ec4899, #f59e0b);
+    }
+
+    .btn-file {
+      background: linear-gradient(45deg, #10b981, #059669);
+      padding: 8px 16px;
+      font-size: 14px;
+      margin: 0 5px;
     }
 
     /* Pantalla del chat */
@@ -114,24 +151,25 @@
       height: 600px;
       display: flex;
       flex-direction: column;
+      background: #1e1e2e;
     }
 
     .chat-header {
-      background: #f8f9fa;
+      background: #2a2a3a;
       padding: 15px 20px;
-      border-bottom: 1px solid #e1e8ed;
+      border-bottom: 1px solid #404040;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
     .room-info h3 {
-      color: #333;
+      color: #ffffff;
       margin-bottom: 5px;
     }
 
     .room-info span {
-      color: #666;
+      color: #b3b3b3;
       font-size: 0.9rem;
     }
 
@@ -142,7 +180,7 @@
     }
 
     .participant {
-      background: #667eea;
+      background: #6366f1;
       color: white;
       padding: 4px 8px;
       border-radius: 12px;
@@ -150,14 +188,14 @@
     }
 
     .participant.you {
-      background: #ff6b6b;
+      background: #ec4899;
     }
 
     .chat-messages {
       flex: 1;
       overflow-y: auto;
       padding: 20px;
-      background: #f8f9fa;
+      background: #1a1a2a;
     }
 
     .message {
@@ -169,29 +207,95 @@
       animation: slideIn 0.3s ease;
       position: relative;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: all 0.3s;
     }
 
     .message:hover {
       transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
 
     .message.own {
-      background: linear-gradient(45deg, #667eea, #764ba2);
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
       color: white;
       margin-left: auto;
       border-bottom-right-radius: 5px;
     }
 
     .message.other {
-      background: white;
-      border: 1px solid #e1e8ed;
+      background: #2a2a3a;
+      border: 1px solid #404040;
       border-bottom-left-radius: 5px;
+      color: #ffffff;
     }
 
     .message.other:hover {
-      border-color: #667eea;
+      border-color: #6366f1;
+      background: #333344;
+    }
+
+    .message.file {
+      padding: 15px;
+    }
+
+    .file-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 10px;
+      margin: 8px 0;
+    }
+
+    .file-icon {
+      font-size: 2rem;
+      min-width: 40px;
+      text-align: center;
+    }
+
+    .file-info {
+      flex: 1;
+    }
+
+    .file-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .file-size {
+      font-size: 0.8rem;
+      color: #b3b3b3;
+    }
+
+    .file-download {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .file-download:hover {
+      background: #059669;
+      transform: scale(1.05);
+    }
+
+    .image-preview {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 10px;
+      margin: 8px 0;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .image-preview:hover {
+      transform: scale(1.05);
     }
 
     .message-header {
@@ -201,23 +305,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      color: #b3b3b3;
     }
 
     .reply-btn {
-      background: rgba(255,255,255,0.2);
+      background: rgba(99, 102, 241, 0.8);
       border: none;
-      color: inherit;
+      color: white;
       padding: 4px 8px;
       border-radius: 10px;
       font-size: 0.7rem;
       cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s;
+      transition: all 0.2s;
     }
 
     .message.other .reply-btn {
-      background: #667eea;
-      color: white;
+      background: #6366f1;
     }
 
     .message:hover .reply-btn {
@@ -226,23 +330,26 @@
 
     .reply-btn:hover {
       transform: scale(1.05);
+      background: #5855eb;
     }
 
     .message-content {
       font-size: 1rem;
       line-height: 1.4;
+      color: #ffffff;
     }
 
     .message-time {
       font-size: 0.7rem;
       opacity: 0.6;
       margin-top: 5px;
+      color: #888;
     }
 
     /* Mensajes citados/respuestas */
     .quoted-message {
-      background: rgba(0,0,0,0.1);
-      border-left: 3px solid #667eea;
+      background: rgba(0,0,0,0.3);
+      border-left: 3px solid #6366f1;
       padding: 8px 12px;
       margin-bottom: 8px;
       border-radius: 8px;
@@ -260,6 +367,7 @@
       font-size: 0.8rem;
       margin-bottom: 4px;
       opacity: 0.8;
+      color: #b3b3b3;
     }
 
     .quoted-content {
@@ -269,20 +377,21 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      color: #cccccc;
     }
 
     .chat-input {
       padding: 20px;
-      background: white;
-      border-top: 1px solid #e1e8ed;
+      background: #2a2a3a;
+      border-top: 1px solid #404040;
     }
 
     /* Preview de respuesta */
     .reply-preview {
       display: none;
-      background: #f0f2f5;
+      background: #333344;
       padding: 10px 15px;
-      border-left: 3px solid #667eea;
+      border-left: 3px solid #6366f1;
       margin-bottom: 10px;
       border-radius: 8px;
       position: relative;
@@ -294,7 +403,7 @@
 
     .reply-preview-header {
       font-size: 0.8rem;
-      color: #666;
+      color: #b3b3b3;
       margin-bottom: 5px;
       display: flex;
       justify-content: space-between;
@@ -303,7 +412,7 @@
 
     .reply-preview-content {
       font-size: 0.9rem;
-      color: #333;
+      color: #ffffff;
       font-style: italic;
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -314,40 +423,70 @@
     .cancel-reply {
       background: none;
       border: none;
-      color: #999;
+      color: #888;
       cursor: pointer;
       padding: 2px 6px;
       border-radius: 10px;
       font-size: 0.8rem;
+      transition: all 0.2s;
     }
 
     .cancel-reply:hover {
-      background: #e1e8ed;
-      color: #666;
+      background: #404040;
+      color: #ffffff;
+    }
+
+    /* Área de archivos */
+    .file-upload-area {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+    }
+
+    .file-input-wrapper input[type=file] {
+      position: absolute;
+      left: -9999px;
     }
 
     .input-container {
       display: flex;
       gap: 10px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .input-container input {
       flex: 1;
       padding: 12px 20px;
-      border: 2px solid #e1e8ed;
+      border: 2px solid #404040;
       border-radius: 25px;
       font-size: 16px;
       outline: none;
+      background: #333344;
+      color: #ffffff;
+      transition: all 0.3s;
+      min-width: 200px;
     }
 
     .input-container input:focus {
-      border-color: #667eea;
+      border-color: #6366f1;
+      background: #404055;
+    }
+
+    .input-container input::placeholder {
+      color: #888;
     }
 
     .input-container input.replying {
-      border-color: #667eea;
-      background: #f8f9ff;
+      border-color: #6366f1;
+      background: #404055;
     }
 
     .status {
@@ -360,21 +499,39 @@
     }
 
     .status.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background: #065f46;
+      color: #a7f3d0;
+      border: 1px solid #047857;
     }
 
     .status.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background: #7f1d1d;
+      color: #fca5a5;
+      border: 1px solid #991b1b;
     }
 
     .status.info {
-      background: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
+      background: #1e3a8a;
+      color: #93c5fd;
+      border: 1px solid #1d4ed8;
+    }
+
+    /* Scrollbar personalizada */
+    .chat-messages::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: #1a1a2a;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: #404040;
+      border-radius: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+      background: #6366f1;
     }
 
     @keyframes slideIn {
@@ -389,19 +546,23 @@
     }
 
     .btn-leave {
-      background: #dc3545;
+      background: #dc2626;
       font-size: 0.9rem;
       padding: 8px 15px;
     }
 
+    .btn-leave:hover {
+      background: #b91c1c;
+    }
+
     .system-message {
       text-align: center;
-      color: #666;
+      color: #888;
       font-style: italic;
       font-size: 0.9rem;
       margin: 10px 0;
       padding: 8px;
-      background: rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.05);
       border-radius: 10px;
     }
 
@@ -411,7 +572,7 @@
       left: 25px;
       top: 50%;
       transform: translateY(-50%);
-      color: #667eea;
+      color: #6366f1;
       font-size: 0.9rem;
       pointer-events: none;
       opacity: 0;
@@ -424,6 +585,39 @@
 
     .input-container.replying input {
       padding-left: 45px;
+    }
+
+    /* Modal para vista de imagen completa */
+    .image-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.9);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .image-modal.active {
+      display: flex;
+    }
+
+    .image-modal img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
+    }
+
+    .image-modal .close {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
     }
 
     @media (max-width: 600px) {
@@ -448,6 +642,20 @@
       .reply-btn {
         opacity: 1;
       }
+
+      .file-upload-area {
+        justify-content: center;
+      }
+
+      .input-container {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .input-container input {
+        min-width: auto;
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -455,7 +663,7 @@
   <div class="container">
     <div class="header">
       <h1>🚀 Chat Ultra Épico 🚀</h1>
-      <p>Crea salas, chatea y responde mensajes</p>
+      <p>Salas, respuestas y archivos en modo oscuro</p>
     </div>
 
     <div id="status" class="status info">Conectando...</div>
@@ -492,7 +700,7 @@
       </div>
 
       <div id="chat-messages" class="chat-messages">
-        <div class="system-message">¡Bienvenido! Escribe tu primer mensaje o responde a otros 💬</div>
+        <div class="system-message">¡Bienvenido! Escribe mensajes, comparte archivos o responde a otros 💬📎</div>
       </div>
 
       <div class="chat-input">
@@ -503,6 +711,24 @@
             <button id="cancel-reply" class="cancel-reply">❌ Cancelar</button>
           </div>
           <div id="reply-preview-content" class="reply-preview-content"></div>
+        </div>
+
+        <!-- Área de carga de archivos -->
+        <div class="file-upload-area">
+          <div class="file-input-wrapper">
+            <input type="file" id="image-input" accept="image/*" multiple>
+            <button class="btn-file">📷 Fotos</button>
+          </div>
+          
+          <div class="file-input-wrapper">
+            <input type="file" id="document-input" accept=".pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx" multiple>
+            <button class="btn-file">📄 Documentos</button>
+          </div>
+          
+          <div class="file-input-wrapper">
+            <input type="file" id="file-input" multiple>
+            <button class="btn-file">📎 Archivos</button>
+          </div>
         </div>
 
         <form id="message-form" class="input-container">
@@ -520,9 +746,15 @@
     </div>
   </div>
 
+  <!-- Modal para imágenes -->
+  <div id="image-modal" class="image-modal">
+    <span class="close" onclick="closeImageModal()">&times;</span>
+    <img id="modal-image" src="" alt="Imagen completa">
+  </div>
+
   <!-- Firebase v8 Scripts -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <script src="cliente.js"></script>
 </body>
-</html>
+    </html>
