@@ -23,7 +23,73 @@ let messageListener = null;
 let participantsListener = null;
 let replyingTo = null;
 let currentMessages = [];
+let userLanguage = 'es';
+let translationEnabled = true;
 
+// Función para traducir texto usando Google Translate API gratuita
+async function translateText(text, targetLang, sourceLang = 'auto') {
+  try {
+    // URL de la API gratuita de Google Translate (via translate.googleapis.com)
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`;
+    
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data && data[0] && data[0][0] && data[0][0][0]) {
+      return data[0][0][0];
+    }
+    
+    throw new Error('No translation available');
+  } catch (error) {
+    console.error('Error traduciendo:', error);
+    throw error;
+  }
+}
+
+// Función para detectar idioma del texto
+function detectLanguage(text) {
+  // Detección simple basada en caracteres
+  const cyrillic = /[\u0400-\u04FF]/.test(text);
+  const spanish = /[ñáéíóúü]/i.test(text);
+  const chinese = /[\u4e00-\u9fff]/.test(text);
+  
+  if (cyrillic) return 'ru';
+  if (chinese) return 'zh';
+  if (spanish) return 'es';
+  
+  // Por defecto, asumir inglés si no se detecta
+  return 'en';
+}
+
+// Función para obtener idioma de destino automático
+function getTargetLanguage(sourceText, userLang) {
+  const detectedLang = detectLanguage(sourceText);
+  
+  // Si el mensaje está en el idioma del usuario, traducir al más común de la sala
+  if (detectedLang === userLang) {
+    // Por defecto, si es español → ruso, si es ruso → español
+    if (userLang === 'es') return 'ru';
+    if (userLang === 'ru') return 'es';
+    return 'en'; // Fallback a inglés
+  }
+  
+  // Si el mensaje NO está en el idioma del usuario, traducir a su idioma
+  return userLang;
+}
+
+// Función para obtener bandera del idioma
+function getLanguageFlag(langCode) {
+  const flags = {
+    'es': '🇪🇸',
+    'ru': '🇷🇺', 
+    'en': '🇺🇸',
+    'fr': '🇫🇷',
+    'de': '🇩🇪',
+    'it': '🇮🇹',
+    'pt': '🇵🇹',
+    'zh': '🇨🇳'
+  };
+  
 // Estados de la aplicación
 const AppState = {
   WELCOME: 'welcome',
@@ -146,20 +212,23 @@ function cleanupListeners() {
 }
 
 // Función para unirse a una sala
-function joinRoom(roomName, username) {
+function joinRoom(roomName, username, language) {
   if (!isConnected || !database) {
     showStatus('Sin conexión', 'error');
     return false;
   }
 
-  console.log(`🏠 Uniéndose a la sala: ${roomName} como ${username}`);
+  console.log(`🏠 Uniéndose a la sala: ${roomName} como ${username} (${language})`);
   
   cleanupListeners();
   
   currentRoom = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  userLanguage = language;
+  
   currentUser = {
     id: generateUserId(),
     name: username,
+    language: language,
     joinedAt: Date.now(),
     avatar: getInitials(username),
     color: getAvatarColor(username)
@@ -171,6 +240,7 @@ function joinRoom(roomName, username) {
   // Añadir usuario a participantes
   participantsRef.child(currentUser.id).set({
     name: currentUser.name,
+    language: currentUser.language,
     avatar: currentUser.avatar,
     color: currentUser.color,
     joinedAt: firebase.database.ServerValue.TIMESTAMP,
@@ -191,7 +261,7 @@ function joinRoom(roomName, username) {
   changeState(AppState.CHAT);
   
   // Actualizar UI del header
-  updateChatHeader(roomName);
+  updateChatHeader(roomName, language);
   
   setupMessageListener();
   setupParticipantsListener();
@@ -219,10 +289,11 @@ function joinRoom(roomName, username) {
 }
 
 // Función para actualizar header del chat
-function updateChatHeader(roomName) {
+function updateChatHeader(roomName, language) {
   const roomAvatar = document.getElementById('room-avatar');
   const roomTitle = document.getElementById('room-title');
   const roomStatusText = document.getElementById('room-status-text');
+  const languageIndicator = document.getElementById('language-indicator');
   
   if (roomAvatar) {
     roomAvatar.textContent = getInitials(roomName);
@@ -234,7 +305,11 @@ function updateChatHeader(roomName) {
   }
   
   if (roomStatusText) {
-    roomStatusText.textContent = 'Activo';
+    roomStatusText.textContent = 'Traducción activa';
+  }
+  
+  if (languageIndicator) {
+    languageIndicator.textContent = `${getLanguageFlag(language)} ${language.toUpperCase()}`;
   }
 }
 
@@ -318,7 +393,7 @@ function displayMessages(messages) {
   container.innerHTML = '';
   
   if (messages.length === 0) {
-    container.innerHTML = '<div class="system-message">¡Comienza la conversación! 💬</div>';
+    container.innerHTML = '<div class="system-message">¡Comienza la conversación! Los mensajes se traducirán automáticamente 🌍</div>';
     return;
   }
   
@@ -348,6 +423,7 @@ function displayMessages(messages) {
       if (!isGrouped) {
         const avatarColor = msg.userColor || getAvatarColor(msg.userName || 'Usuario');
         const avatarText = msg.userAvatar || getInitials(msg.userName || 'U');
+        const userLangFlag = msg.userLanguage ? getLanguageFlag(msg.userLanguage) : '🌍';
         
         avatarHtml = `
           <div class="message-avatar" style="background: ${avatarColor}">
@@ -357,7 +433,7 @@ function displayMessages(messages) {
         
         headerHtml = `
           <div class="message-header">
-            <span class="message-author">${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</span>
+            <span class="message-author">${isOwn ? 'Tú' : (msg.userName || 'Usuario')} ${userLangFlag}</span>
             <span class="message-time">${timestamp}</span>
           </div>
         `;
@@ -384,13 +460,24 @@ function displayMessages(messages) {
         `;
       }
       
+      // Contenido del mensaje con traducción
+      let messageContentHtml = `<div class="original-message">${escapeHtml(msg.content)}</div>`;
+      
+      // Si la traducción está habilitada y el mensaje no es del usuario actual
+      if (translationEnabled && !isOwn && msg.userLanguage && msg.userLanguage !== userLanguage) {
+        messageContentHtml += `<div class="translated-message translation-loading" id="translation-${msg.id}">🌐 Traduciendo...</div>`;
+        
+        // Traducir mensaje de forma asíncrona
+        translateMessage(msg.id, msg.content, msg.userLanguage);
+      }
+      
       messageDiv.innerHTML = `
         ${avatarHtml}
         <div class="message-content">
           ${headerHtml}
           <div class="message-bubble">
             ${quotedHtml}
-            ${escapeHtml(msg.content)}
+            ${messageContentHtml}
             ${actionsHtml}
           </div>
         </div>
@@ -419,6 +506,29 @@ function displayMessages(messages) {
     setTimeout(() => {
       container.scrollTop = container.scrollHeight;
     }, 100);
+  }
+}
+
+// Función para traducir mensaje de forma asíncrona
+async function translateMessage(messageId, originalText, sourceLang) {
+  try {
+    const targetLang = userLanguage;
+    if (sourceLang === targetLang) return;
+    
+    const translatedText = await translateText(originalText, targetLang, sourceLang);
+    
+    const translationDiv = document.getElementById(`translation-${messageId}`);
+    if (translationDiv) {
+      translationDiv.className = 'translated-message';
+      translationDiv.innerHTML = `🌐 ${escapeHtml(translatedText)}`;
+    }
+  } catch (error) {
+    console.error('Error traduciendo mensaje:', error);
+    const translationDiv = document.getElementById(`translation-${messageId}`);
+    if (translationDiv) {
+      translationDiv.className = 'translated-message translation-error';
+      translationDiv.innerHTML = '🌐 Error de traducción';
+    }
   }
 }
 
@@ -504,6 +614,7 @@ function sendMessage() {
     userId: currentUser.id,
     userAvatar: currentUser.avatar,
     userColor: currentUser.color,
+    userLanguage: currentUser.language,
     timestamp: firebase.database.ServerValue.TIMESTAMP
   };
   
