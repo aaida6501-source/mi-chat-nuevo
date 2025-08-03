@@ -1,4 +1,4 @@
-console.log('🚀 Iniciando Chat Ultra Épico con Salas...');
+console.log('🚀 Iniciando Chat Ultra Épico con Respuestas...');
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -21,6 +21,10 @@ let participantsRef = null;
 let isConnected = false;
 let messageListener = null;
 let participantsListener = null;
+
+// Variables para el sistema de respuestas
+let replyingTo = null;
+let currentMessages = [];
 
 // Estados de la aplicación
 const AppState = {
@@ -198,6 +202,7 @@ function setupMessageListener() {
         }
       });
       
+      currentMessages = messages; // Guardar para el sistema de respuestas
       displayMessages(messages);
       console.log(`📋 ${messages.length} mensajes cargados`);
     } catch (error) {
@@ -259,14 +264,39 @@ function displayMessages(messages) {
     } else {
       const isOwn = msg.userId === currentUser.id;
       messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+      messageDiv.setAttribute('data-message-id', msg.id);
       
       const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
       
+      let quotedHtml = '';
+      if (msg.replyTo) {
+        const quotedMessage = findMessageById(msg.replyTo.messageId);
+        if (quotedMessage) {
+          quotedHtml = `
+            <div class="quoted-message">
+              <div class="quoted-author">📝 ${msg.replyTo.userName}</div>
+              <div class="quoted-content">${escapeHtml(msg.replyTo.content)}</div>
+            </div>
+          `;
+        }
+      }
+      
       messageDiv.innerHTML = `
-        <div class="message-header">${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</div>
+        <div class="message-header">
+          <span>${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</span>
+          ${!isOwn ? `<button class="reply-btn" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content)}')">↩️ Responder</button>` : ''}
+        </div>
+        ${quotedHtml}
         <div class="message-content">${escapeHtml(msg.content)}</div>
         <div class="message-time">${timestamp}</div>
       `;
+      
+      // Agregar evento de click para móviles (respuesta rápida)
+      if (!isOwn) {
+        messageDiv.addEventListener('dblclick', () => {
+          startReply(msg.id, msg.userName, msg.content);
+        });
+      }
     }
     
     chatContainer.appendChild(messageDiv);
@@ -274,6 +304,59 @@ function displayMessages(messages) {
   
   // Scroll al final
   chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Función para encontrar mensaje por ID
+function findMessageById(messageId) {
+  return currentMessages.find(msg => msg.id === messageId);
+}
+
+// Función para iniciar respuesta a un mensaje
+function startReply(messageId, userName, content) {
+  console.log(`💬 Iniciando respuesta a mensaje de ${userName}`);
+  
+  replyingTo = {
+    messageId: messageId,
+    userName: userName,
+    content: content
+  };
+  
+  // Mostrar preview de respuesta
+  const replyPreview = document.getElementById('reply-preview');
+  const replyToUser = document.getElementById('reply-to-user');
+  const replyPreviewContent = document.getElementById('reply-preview-content');
+  const messageInput = document.getElementById('message-input');
+  const inputContainer = document.querySelector('.input-container');
+  
+  if (replyPreview && replyToUser && replyPreviewContent && messageInput) {
+    replyToUser.textContent = userName;
+    replyPreviewContent.textContent = content;
+    replyPreview.classList.add('active');
+    inputContainer.classList.add('replying');
+    
+    messageInput.placeholder = `Respondiendo a ${userName}...`;
+    messageInput.focus();
+    
+    console.log('✅ Preview de respuesta activado');
+  }
+}
+
+// Función para cancelar respuesta
+function cancelReply() {
+  console.log('❌ Cancelando respuesta');
+  
+  replyingTo = null;
+  
+  const replyPreview = document.getElementById('reply-preview');
+  const messageInput = document.getElementById('message-input');
+  const inputContainer = document.querySelector('.input-container');
+  
+  if (replyPreview && messageInput && inputContainer) {
+    replyPreview.classList.remove('active');
+    inputContainer.classList.remove('replying');
+    messageInput.placeholder = 'Escribe tu mensaje...';
+    messageInput.focus();
+  }
 }
 
 // Función para mostrar participantes
@@ -333,10 +416,25 @@ function sendMessage() {
     timestamp: firebase.database.ServerValue.TIMESTAMP
   };
   
+  // Agregar información de respuesta si existe
+  if (replyingTo) {
+    messageData.replyTo = {
+      messageId: replyingTo.messageId,
+      userName: replyingTo.userName,
+      content: replyingTo.content.substring(0, 100) // Limitar contenido citado
+    };
+    console.log('💬 Mensaje con respuesta preparado');
+  }
+  
   messagesRef.push(messageData)
     .then(() => {
       console.log('✅ Mensaje enviado');
       input.value = '';
+      
+      // Cancelar respuesta si estaba activa
+      if (replyingTo) {
+        cancelReply();
+      }
     })
     .catch((error) => {
       console.error('❌ Error al enviar mensaje:', error);
@@ -372,11 +470,17 @@ function leaveRoom() {
   // Limpiar listeners
   cleanupListeners();
   
+  // Cancelar respuesta si estaba activa
+  if (replyingTo) {
+    cancelReply();
+  }
+  
   // Resetear variables
   currentRoom = null;
   currentUser = null;
   messagesRef = null;
   participantsRef = null;
+  currentMessages = [];
   
   // Volver a pantalla de bienvenida
   changeState(AppState.WELCOME);
@@ -434,6 +538,9 @@ function handleJoinRoom(isCreating = false) {
   }
 }
 
+// Función global para iniciar respuesta (llamada desde HTML)
+window.startReply = startReply;
+
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🎯 DOM cargado, inicializando aplicación...');
@@ -451,6 +558,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const joinBtn = document.getElementById('join-btn');
   const createBtn = document.getElementById('create-btn');
   const leaveBtn = document.getElementById('leave-btn');
+  const cancelReplyBtn = document.getElementById('cancel-reply');
   
   if (joinBtn) {
     joinBtn.addEventListener('click', () => handleJoinRoom(false));
@@ -462,6 +570,10 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (leaveBtn) {
     leaveBtn.addEventListener('click', leaveRoom);
+  }
+  
+  if (cancelReplyBtn) {
+    cancelReplyBtn.addEventListener('click', cancelReply);
   }
   
   // Enter en campos de bienvenida
@@ -501,6 +613,11 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         sendMessage();
       }
+      
+      // Cancelar respuesta con Escape
+      if (e.key === 'Escape' && replyingTo) {
+        cancelReply();
+      }
     });
   }
   
@@ -511,7 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 500);
   
-  console.log('🎉 Aplicación inicializada correctamente');
+  console.log('🎉 Aplicación con respuestas inicializada correctamente');
 });
 
 // Manejo de errores globales
@@ -527,4 +644,4 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-console.log('📜 Cliente con salas cargado completamente');
+console.log('📜 Cliente con respuestas cargado completamente');
