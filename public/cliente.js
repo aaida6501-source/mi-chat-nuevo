@@ -1,4 +1,4 @@
-console.log('🚀 Iniciando Chat Ultra Épico Dark Mode con Archivos...');
+console.log('🚀 Iniciando ChatFlow - Comunicación Moderna...');
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -21,8 +21,6 @@ let participantsRef = null;
 let isConnected = false;
 let messageListener = null;
 let participantsListener = null;
-
-// Variables para el sistema de respuestas
 let replyingTo = null;
 let currentMessages = [];
 
@@ -34,19 +32,45 @@ const AppState = {
 
 let currentState = AppState.WELCOME;
 
-// Función para mostrar estado
+// Función para mostrar estado en la barra superior
 function showStatus(message, type = 'info') {
-  const statusElement = document.getElementById('status');
-  if (statusElement) {
-    statusElement.textContent = message;
-    statusElement.className = `status ${type}`;
+  const statusBar = document.getElementById('status-bar');
+  if (statusBar) {
+    statusBar.textContent = message;
+    statusBar.className = `status-bar ${type}`;
     console.log(`📊 Estado: ${message}`);
   }
 }
 
-// Función para generar ID único del usuario
+// Función para generar ID único
 function generateUserId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+// Función para obtener iniciales del nombre
+function getInitials(name) {
+  return name.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
+}
+
+// Función para obtener color basado en el nombre
+function getAvatarColor(name) {
+  const colors = [
+    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  
+  return colors[Math.abs(hash) % colors.length];
 }
 
 // Función para cambiar estado de la aplicación
@@ -57,7 +81,7 @@ function changeState(newState) {
   const chatScreen = document.getElementById('chat-screen');
   
   if (newState === AppState.WELCOME) {
-    welcomeScreen.style.display = 'block';
+    welcomeScreen.style.display = 'flex';
     chatScreen.style.display = 'none';
   } else if (newState === AppState.CHAT) {
     welcomeScreen.style.display = 'none';
@@ -65,7 +89,7 @@ function changeState(newState) {
   }
 }
 
-// Función para obtener icono según tipo de archivo
+// Función para obtener icono de archivo
 function getFileIcon(fileName) {
   const extension = fileName.split('.').pop().toLowerCase();
   
@@ -103,7 +127,7 @@ function formatFileSize(bytes) {
 // Función para convertir archivo a Base64
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
-    console.log(`🔄 Iniciando conversión de ${file.name} (${formatFileSize(file.size)}) a Base64...`);
+    console.log(`🔄 Convirtiendo ${file.name} (${formatFileSize(file.size)}) a Base64...`);
     
     const reader = new FileReader();
     
@@ -120,7 +144,9 @@ function fileToBase64(file) {
     reader.onprogress = function(e) {
       if (e.lengthComputable) {
         const percentComplete = (e.loaded / e.total) * 100;
-        console.log(`📊 Progreso ${file.name}: ${percentComplete.toFixed(1)}%`);
+        if (percentComplete % 25 === 0) { // Log cada 25%
+          console.log(`📊 Progreso ${file.name}: ${percentComplete.toFixed(0)}%`);
+        }
       }
     };
     
@@ -154,7 +180,9 @@ function initializeFirebase() {
         console.log('🌐 Conectado a Firebase');
         isConnected = true;
         if (currentState === AppState.WELCOME) {
-          showStatus('Listo para crear o unirse a una sala! 🎉', 'success');
+          showStatus('Listo para comenzar - Ingresa tus datos', 'success');
+        } else {
+          showStatus('Conectado y sincronizado', 'success');
         }
       } else {
         console.log('❌ Desconectado de Firebase');
@@ -171,7 +199,7 @@ function initializeFirebase() {
   }
 }
 
-// Función para limpiar listeners anteriores
+// Función para limpiar listeners
 function cleanupListeners() {
   if (messageListener) {
     messageListener.off();
@@ -192,15 +220,15 @@ function joinRoom(roomName, username) {
 
   console.log(`🏠 Uniéndose a la sala: ${roomName} como ${username}`);
   
-  // Limpiar listeners anteriores
   cleanupListeners();
   
-  // Configurar referencias
   currentRoom = roomName.toLowerCase().replace(/[^a-z0-9]/g, '');
   currentUser = {
     id: generateUserId(),
     name: username,
-    joinedAt: Date.now()
+    joinedAt: Date.now(),
+    avatar: getInitials(username),
+    color: getAvatarColor(username)
   };
   
   messagesRef = database.ref(`rooms/${currentRoom}/messages`);
@@ -209,6 +237,8 @@ function joinRoom(roomName, username) {
   // Añadir usuario a participantes
   participantsRef.child(currentUser.id).set({
     name: currentUser.name,
+    avatar: currentUser.avatar,
+    color: currentUser.color,
     joinedAt: firebase.database.ServerValue.TIMESTAMP,
     lastSeen: firebase.database.ServerValue.TIMESTAMP
   });
@@ -225,13 +255,24 @@ function joinRoom(roomName, username) {
   
   // Cambiar a pantalla de chat
   changeState(AppState.CHAT);
-  document.getElementById('current-room').textContent = `Sala: ${roomName}`;
   
-  // Configurar listeners
+  // Actualizar UI del header
+  const roomAvatar = document.getElementById('room-avatar');
+  const currentRoomTitle = document.getElementById('current-room');
+  
+  if (roomAvatar) {
+    roomAvatar.textContent = getInitials(roomName);
+    roomAvatar.style.background = getAvatarColor(roomName);
+  }
+  
+  if (currentRoomTitle) {
+    currentRoomTitle.textContent = roomName;
+  }
+  
   setupMessageListener();
   setupParticipantsListener();
   
-  // Actualizar last seen cada 30 segundos
+  // Actualizar actividad cada 30 segundos
   setInterval(() => {
     if (currentUser && participantsRef) {
       participantsRef.child(currentUser.id).update({
@@ -240,11 +281,11 @@ function joinRoom(roomName, username) {
     }
   }, 30000);
   
-  showStatus('¡Conectado al chat! 🎉', 'success');
+  showStatus('¡Conectado y listo para chatear!', 'success');
   
-  // Focus al input de mensaje
   setTimeout(() => {
-    document.getElementById('message-input').focus();
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) messageInput.focus();
   }, 500);
   
   return true;
@@ -256,7 +297,7 @@ function setupMessageListener() {
   
   console.log('📥 Configurando listener de mensajes...');
   
-  messageListener = messagesRef.limitToLast(50);
+  messageListener = messagesRef.limitToLast(100);
   messageListener.on('value', (snapshot) => {
     try {
       const messages = [];
@@ -270,7 +311,7 @@ function setupMessageListener() {
         }
       });
       
-      currentMessages = messages; // Guardar para el sistema de respuestas
+      currentMessages = messages;
       displayMessages(messages);
       console.log(`📋 ${messages.length} mensajes cargados`);
     } catch (error) {
@@ -310,20 +351,23 @@ function setupParticipantsListener() {
 
 // Función para mostrar mensajes
 function displayMessages(messages) {
-  const chatContainer = document.getElementById('chat-messages');
-  if (!chatContainer) return;
+  const container = document.getElementById('messages-container');
+  if (!container) return;
+  
+  // Guardar posición del scroll
+  const wasScrolledToBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
   
   // Ordenar por timestamp
   messages.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
   
-  chatContainer.innerHTML = '';
+  container.innerHTML = '';
   
   if (messages.length === 0) {
-    chatContainer.innerHTML = '<div class="system-message">¡Sé el primero en escribir o compartir archivos! 💬📎</div>';
+    container.innerHTML = '<div class="system-message">¡Comienza la conversación! Escribe algo o comparte un archivo 🚀</div>';
     return;
   }
   
-  messages.forEach(msg => {
+  messages.forEach((msg, index) => {
     const messageDiv = document.createElement('div');
     
     if (msg.type === 'system') {
@@ -331,33 +375,60 @@ function displayMessages(messages) {
       messageDiv.textContent = msg.content;
     } else {
       const isOwn = msg.userId === currentUser.id;
-      messageDiv.className = `message ${isOwn ? 'own' : 'other'} ${msg.type === 'file' ? 'file' : ''}`;
+      const prevMsg = messages[index - 1];
+      const isGrouped = prevMsg && 
+                       prevMsg.userId === msg.userId && 
+                       prevMsg.type !== 'system' &&
+                       (msg.timestamp - prevMsg.timestamp) < 300000; // 5 minutos
+      
+      messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
       messageDiv.setAttribute('data-message-id', msg.id);
       
-      const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+      const timestamp = msg.timestamp ? 
+        new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+      
+      let avatarHtml = '';
+      let headerHtml = '';
+      
+      if (!isGrouped) {
+        const avatarColor = msg.userColor || getAvatarColor(msg.userName || 'Usuario');
+        const avatarText = msg.userAvatar || getInitials(msg.userName || 'U');
+        
+        avatarHtml = `
+          <div class="message-avatar" style="background: ${avatarColor}">
+            ${avatarText}
+          </div>
+        `;
+        
+        headerHtml = `
+          <div class="message-header">
+            <span class="message-author">${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</span>
+            <span class="message-time">${timestamp}</span>
+          </div>
+        `;
+      }
       
       let quotedHtml = '';
       if (msg.replyTo) {
         quotedHtml = `
           <div class="quoted-message">
-            <div class="quoted-author">📝 ${msg.replyTo.userName}</div>
+            <div class="quoted-author">💬 ${msg.replyTo.userName}</div>
             <div class="quoted-content">${escapeHtml(msg.replyTo.content)}</div>
           </div>
         `;
       }
       
       let contentHtml = '';
+      let actionsHtml = '';
       
       if (msg.type === 'file') {
-        // Mensaje de archivo
         const fileIcon = getFileIcon(msg.fileName);
         
         if (msg.fileType && msg.fileType.startsWith('image/')) {
-          // Imagen
           contentHtml = `
-            <div class="file-preview">
+            <div class="file-message">
               <div class="file-icon">${fileIcon}</div>
-              <div class="file-info">
+              <div class="file-details">
                 <div class="file-name">${escapeHtml(msg.fileName)}</div>
                 <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
               </div>
@@ -365,38 +436,50 @@ function displayMessages(messages) {
             <img class="image-preview" src="${msg.fileData}" alt="${escapeHtml(msg.fileName)}" onclick="openImageModal('${msg.fileData}')">
           `;
         } else {
-          // Otros archivos
           contentHtml = `
-            <div class="file-preview">
+            <div class="file-message">
               <div class="file-icon">${fileIcon}</div>
-              <div class="file-info">
+              <div class="file-details">
                 <div class="file-name">${escapeHtml(msg.fileName)}</div>
                 <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
               </div>
-              <button class="file-download" onclick="downloadFile('${msg.fileData}', '${escapeHtml(msg.fileName)}')">⬇️ Descargar</button>
+              <button class="file-download" onclick="downloadFile('${msg.fileData}', '${escapeHtml(msg.fileName)}')">
+                ⬇️ Descargar
+              </button>
             </div>
           `;
         }
         
         if (msg.content && msg.content.trim()) {
-          contentHtml += `<div class="message-content">${escapeHtml(msg.content)}</div>`;
+          contentHtml += `<div style="margin-top: 8px;">${escapeHtml(msg.content)}</div>`;
         }
       } else {
-        // Mensaje de texto normal
-        contentHtml = `<div class="message-content">${escapeHtml(msg.content)}</div>`;
+        contentHtml = escapeHtml(msg.content);
+      }
+      
+      if (!isOwn) {
+        actionsHtml = `
+          <div class="message-actions">
+            <div class="action-button" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content || msg.fileName || 'archivo')}')" title="Responder">
+              ↩️
+            </div>
+          </div>
+        `;
       }
       
       messageDiv.innerHTML = `
-        <div class="message-header">
-          <span>${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</span>
-          ${!isOwn ? `<button class="reply-btn" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content || msg.fileName || 'archivo')}')">↩️ Responder</button>` : ''}
+        ${avatarHtml}
+        <div class="message-content">
+          ${headerHtml}
+          <div class="message-bubble">
+            ${quotedHtml}
+            ${contentHtml}
+            ${actionsHtml}
+          </div>
         </div>
-        ${quotedHtml}
-        ${contentHtml}
-        <div class="message-time">${timestamp}</div>
       `;
       
-      // Agregar evento de doble click para respuesta rápida
+      // Agregar doble click para respuesta rápida
       if (!isOwn) {
         messageDiv.addEventListener('dblclick', () => {
           startReply(msg.id, msg.userName, msg.content || msg.fileName || 'archivo');
@@ -404,19 +487,52 @@ function displayMessages(messages) {
       }
     }
     
-    chatContainer.appendChild(messageDiv);
+    container.appendChild(messageDiv);
+    
+    // Animar entrada del mensaje
+    setTimeout(() => {
+      messageDiv.style.animationDelay = `${index * 50}ms`;
+    }, 10);
   });
   
-  // Scroll al final
-  chatContainer.scrollTop = chatContainer.scrollHeight;
+  // Scroll al final si estaba al final
+  if (wasScrolledToBottom) {
+    setTimeout(() => {
+      container.scrollTop = container.scrollHeight;
+    }, 100);
+  }
 }
 
-// Función para encontrar mensaje por ID
-function findMessageById(messageId) {
-  return currentMessages.find(msg => msg.id === messageId);
+// Función para mostrar participantes
+function displayParticipants(participants) {
+  const participantsList = document.getElementById('participants-list');
+  const participantCount = document.getElementById('participant-count');
+  
+  if (!participantsList || !participantCount) return;
+  
+  participantCount.textContent = `${participants.length} ${participants.length === 1 ? 'participante' : 'participantes'} conectados`;
+  
+  participantsList.innerHTML = '';
+  
+  participants.slice(0, 8).forEach(participant => { // Máximo 8 avatares
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className = `participant-avatar ${participant.id === currentUser.id ? 'you' : ''}`;
+    avatarDiv.style.background = participant.color || getAvatarColor(participant.name);
+    avatarDiv.textContent = participant.avatar || getInitials(participant.name);
+    avatarDiv.title = participant.id === currentUser.id ? `${participant.name} (tú)` : participant.name;
+    participantsList.appendChild(avatarDiv);
+  });
+  
+  if (participants.length > 8) {
+    const moreDiv = document.createElement('div');
+    moreDiv.className = 'participant-avatar';
+    moreDiv.textContent = `+${participants.length - 8}`;
+    moreDiv.title = `${participants.length - 8} participantes más`;
+    participantsList.appendChild(moreDiv);
+  }
 }
 
-// Función para iniciar respuesta a un mensaje
+// Función para iniciar respuesta
 function startReply(messageId, userName, content) {
   console.log(`💬 Iniciando respuesta a mensaje de ${userName}`);
   
@@ -426,7 +542,6 @@ function startReply(messageId, userName, content) {
     content: content
   };
   
-  // Mostrar preview de respuesta
   const replyPreview = document.getElementById('reply-preview');
   const replyToUser = document.getElementById('reply-to-user');
   const replyPreviewContent = document.getElementById('reply-preview-content');
@@ -441,8 +556,6 @@ function startReply(messageId, userName, content) {
     
     messageInput.placeholder = `Respondiendo a ${userName}...`;
     messageInput.focus();
-    
-    console.log('✅ Preview de respuesta activado');
   }
 }
 
@@ -464,25 +577,6 @@ function cancelReply() {
   }
 }
 
-// Función para mostrar participantes
-function displayParticipants(participants) {
-  const participantsList = document.getElementById('participants-list');
-  const participantCount = document.getElementById('participant-count');
-  
-  if (!participantsList || !participantCount) return;
-  
-  participantCount.textContent = `Participantes: ${participants.length}`;
-  
-  participantsList.innerHTML = '';
-  
-  participants.forEach(participant => {
-    const participantDiv = document.createElement('div');
-    participantDiv.className = `participant ${participant.id === currentUser.id ? 'you' : ''}`;
-    participantDiv.textContent = participant.id === currentUser.id ? `${participant.name} (tú)` : participant.name;
-    participantsList.appendChild(participantDiv);
-  });
-}
-
 // Función para procesar archivos
 async function processFiles(files, messageText = '') {
   if (!files || files.length === 0) {
@@ -491,7 +585,7 @@ async function processFiles(files, messageText = '') {
   }
   
   if (!messagesRef || !currentUser) {
-    console.error('❌ No hay conexión activa para enviar archivos');
+    console.error('❌ No hay conexión activa');
     showStatus('Error: No hay conexión activa', 'error');
     return;
   }
@@ -507,7 +601,7 @@ async function processFiles(files, messageText = '') {
     try {
       console.log(`📎 Procesando archivo ${i + 1}/${files.length}: ${file.name}`);
       
-      // Validar tamaño (máximo 2MB por archivo - reducido para mejor rendimiento)
+      // Validar tamaño (máximo 2MB)
       if (file.size > 2 * 1024 * 1024) {
         console.warn(`⚠️ Archivo ${file.name} muy grande: ${formatFileSize(file.size)}`);
         showStatus(`${file.name} es muy grande (máx. 2MB)`, 'error');
@@ -515,7 +609,6 @@ async function processFiles(files, messageText = '') {
       }
       
       // Convertir a Base64
-      console.log(`🔄 Convirtiendo ${file.name} a Base64...`);
       const fileData = await fileToBase64(file);
       
       if (!fileData) {
@@ -529,13 +622,15 @@ async function processFiles(files, messageText = '') {
         fileSize: file.size,
         fileType: file.type || 'application/octet-stream',
         fileData: fileData,
-        content: (i === 0 && messageText) ? messageText : '', // Solo en el primer archivo
+        content: (i === 0 && messageText) ? messageText : '',
         userName: currentUser.name,
         userId: currentUser.id,
+        userAvatar: currentUser.avatar,
+        userColor: currentUser.color,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       };
       
-      // Agregar información de respuesta si existe (solo en el primer archivo)
+      // Agregar respuesta si existe
       if (replyingTo && i === 0) {
         messageData.replyTo = {
           messageId: replyingTo.messageId,
@@ -545,11 +640,9 @@ async function processFiles(files, messageText = '') {
       }
       
       // Enviar archivo
-      console.log(`📤 Enviando archivo a Firebase: ${file.name}`);
       await messagesRef.push(messageData);
-      
       processedCount++;
-      console.log(`✅ Archivo enviado exitosamente: ${file.name}`);
+      console.log(`✅ Archivo enviado: ${file.name}`);
       
     } catch (error) {
       console.error(`❌ Error procesando ${file.name}:`, error);
@@ -557,27 +650,24 @@ async function processFiles(files, messageText = '') {
     }
   }
   
-  // Cancelar respuesta después de enviar
   if (replyingTo) {
     cancelReply();
   }
   
   if (processedCount > 0) {
-    showStatus(`✅ ${processedCount} archivo(s) enviado(s)!`, 'success');
-    console.log(`🎉 Proceso completado: ${processedCount}/${files.length} archivos enviados`);
+    showStatus(`✅ ${processedCount} archivo(s) enviado(s)`, 'success');
   } else {
     showStatus('❌ No se pudo enviar ningún archivo', 'error');
   }
   
-  // Limpiar estado después de 3 segundos
   setTimeout(() => {
     if (currentState === AppState.CHAT) {
-      showStatus('', 'info');
+      showStatus('Conectado y sincronizado', 'success');
     }
   }, 3000);
 }
 
-// Función para enviar mensaje de texto
+// Función para enviar mensaje
 function sendMessage() {
   console.log('📤 Enviando mensaje...');
   
@@ -604,7 +694,7 @@ function sendMessage() {
   // Deshabilitar botón temporalmente
   if (sendButton) {
     sendButton.disabled = true;
-    sendButton.textContent = 'Enviando...';
+    sendButton.innerHTML = '<span>⏳</span>Enviando...';
   }
   
   const messageData = {
@@ -612,6 +702,8 @@ function sendMessage() {
     content: message,
     userName: currentUser.name,
     userId: currentUser.id,
+    userAvatar: currentUser.avatar,
+    userColor: currentUser.color,
     timestamp: firebase.database.ServerValue.TIMESTAMP
   };
   
@@ -629,7 +721,6 @@ function sendMessage() {
       console.log('✅ Mensaje enviado');
       input.value = '';
       
-      // Cancelar respuesta si estaba activa
       if (replyingTo) {
         cancelReply();
       }
@@ -641,7 +732,7 @@ function sendMessage() {
     .finally(() => {
       if (sendButton) {
         sendButton.disabled = false;
-        sendButton.textContent = 'Enviar 🚀';
+        sendButton.innerHTML = '<span>🚀</span>Enviar';
       }
       input.focus();
     });
@@ -677,8 +768,9 @@ function leaveRoom() {
   currentMessages = [];
   
   changeState(AppState.WELCOME);
-  showStatus('Listo para crear o unirse a una sala! 🎉', 'success');
+  showStatus('Listo para comenzar - Ingresa tus datos', 'success');
   
+  // Limpiar campos
   document.getElementById('username').value = '';
   document.getElementById('room-name').value = '';
   document.getElementById('username').focus();
@@ -740,6 +832,15 @@ window.openImageModal = function(imageSrc) {
   if (modal && modalImage) {
     modalImage.src = imageSrc;
     modal.classList.add('active');
+    
+    // Cerrar con Escape
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeImageModal();
+        document.removeEventListener('keydown', handleEscape);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
   }
 };
 
@@ -751,17 +852,24 @@ window.closeImageModal = function() {
 };
 
 window.downloadFile = function(fileData, fileName) {
-  const link = document.createElement('a');
-  link.href = fileData;
-  link.download = fileName;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  try {
+    const link = document.createElement('a');
+    link.href = fileData;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showStatus(`Descargando ${fileName}...`, 'success');
+  } catch (error) {
+    console.error('Error descargando archivo:', error);
+    showStatus('Error al descargar archivo', 'error');
+  }
 };
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🎯 DOM cargado, inicializando aplicación...');
+  console.log('🎯 DOM cargado, inicializando ChatFlow...');
   
   if (!initializeFirebase()) {
     showStatus('Error al inicializar la aplicación', 'error');
@@ -787,13 +895,22 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (usernameInput) {
     usernameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') roomNameInput.focus();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (roomNameInput) roomNameInput.focus();
+      }
     });
+    
+    // Auto-focus después de un momento
+    setTimeout(() => usernameInput.focus(), 1000);
   }
   
   if (roomNameInput) {
     roomNameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') handleJoinRoom(false);
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleJoinRoom(false);
+      }
     });
   }
   
@@ -818,79 +935,64 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelReply();
       }
     });
+    
+    // Indicador de escritura (futuro)
+    let typingTimeout;
+    messageInput.addEventListener('input', () => {
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        // Aquí se podría implementar indicador de "está escribiendo"
+      }, 1000);
+    });
   }
   
-  // Inputs de archivos con debugging
+  // Inputs de archivos con debugging mejorado
   const imageInput = document.getElementById('image-input');
   const documentInput = document.getElementById('document-input');
   const fileInput = document.getElementById('file-input');
   
-  console.log('🔧 Configurando event listeners de archivos...');
-  console.log('📷 Image input encontrado:', !!imageInput);
-  console.log('📄 Document input encontrado:', !!documentInput);
-  console.log('📎 File input encontrado:', !!fileInput);
+  console.log('🔧 Configurando manejadores de archivos...');
   
   if (imageInput) {
     imageInput.addEventListener('change', function(e) {
-      console.log('📷 Image input change event triggered');
-      console.log('Files selected:', e.target.files.length);
-      
+      console.log('📷 Seleccionadas', e.target.files.length, 'imágenes');
       const files = Array.from(e.target.files);
       if (files.length > 0) {
         const messageText = messageInput ? messageInput.value.trim() : '';
         if (messageInput) messageInput.value = '';
-        
-        console.log(`📷 Procesando ${files.length} imágenes...`);
         processFiles(files, messageText);
       }
-      e.target.value = ''; // Reset input
+      e.target.value = '';
     });
-    console.log('✅ Image input listener configurado');
-  } else {
-    console.error('❌ No se encontró image-input');
   }
   
   if (documentInput) {
     documentInput.addEventListener('change', function(e) {
-      console.log('📄 Document input change event triggered');
-      console.log('Files selected:', e.target.files.length);
-      
+      console.log('📄 Seleccionados', e.target.files.length, 'documentos');
       const files = Array.from(e.target.files);
       if (files.length > 0) {
         const messageText = messageInput ? messageInput.value.trim() : '';
         if (messageInput) messageInput.value = '';
-        
-        console.log(`📄 Procesando ${files.length} documentos...`);
         processFiles(files, messageText);
       }
-      e.target.value = ''; // Reset input
+      e.target.value = '';
     });
-    console.log('✅ Document input listener configurado');
-  } else {
-    console.error('❌ No se encontró document-input');
   }
   
   if (fileInput) {
     fileInput.addEventListener('change', function(e) {
-      console.log('📎 File input change event triggered');
-      console.log('Files selected:', e.target.files.length);
-      
+      console.log('📎 Seleccionados', e.target.files.length, 'archivos');
       const files = Array.from(e.target.files);
       if (files.length > 0) {
         const messageText = messageInput ? messageInput.value.trim() : '';
         if (messageInput) messageInput.value = '';
-        
-        console.log(`📎 Procesando ${files.length} archivos...`);
         processFiles(files, messageText);
       }
-      e.target.value = ''; // Reset input
+      e.target.value = '';
     });
-    console.log('✅ File input listener configurado');
-  } else {
-    console.error('❌ No se encontró file-input');
   }
   
-  // Cerrar modal al hacer click fuera de la imagen
+  // Cerrar modal de imagen al hacer click fuera
   const imageModal = document.getElementById('image-modal');
   if (imageModal) {
     imageModal.addEventListener('click', (e) => {
@@ -900,12 +1002,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // Focus inicial
-  setTimeout(() => {
-    if (usernameInput) usernameInput.focus();
-  }, 500);
+  // Atajos de teclado globales
+  document.addEventListener('keydown', (e) => {
+    // Ctrl/Cmd + Enter para enviar mensaje rápido
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && currentState === AppState.CHAT) {
+      e.preventDefault();
+      sendMessage();
+    }
+    
+    // Escape para cancelar respuesta
+    if (e.key === 'Escape' && replyingTo) {
+      e.preventDefault();
+      cancelReply();
+    }
+  });
   
-  console.log('🎉 Aplicación Dark Mode con archivos inicializada');
+  console.log('🎉 ChatFlow inicializado correctamente');
 });
 
 // Manejo de errores y limpieza
@@ -920,4 +1032,16 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-console.log('📜 Cliente Dark Mode con archivos cargado completamente');
+// Manejo de visibilidad de la página
+document.addEventListener('visibilitychange', () => {
+  if (currentUser && participantsRef) {
+    if (document.visibilityState === 'visible') {
+      // Usuario volvió a la pestaña
+      participantsRef.child(currentUser.id).update({
+        lastSeen: firebase.database.ServerValue.TIMESTAMP
+      });
+    }
+  }
+});
+
+console.log('📜 ChatFlow cargado completamente - Listo para comunicación moderna');
