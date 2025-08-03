@@ -167,6 +167,14 @@
       max-width: 80%;
       word-wrap: break-word;
       animation: slideIn 0.3s ease;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .message:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     .message.own {
@@ -182,10 +190,42 @@
       border-bottom-left-radius: 5px;
     }
 
+    .message.other:hover {
+      border-color: #667eea;
+    }
+
     .message-header {
       font-size: 0.8rem;
       opacity: 0.8;
       margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reply-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: inherit;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .message.other .reply-btn {
+      background: #667eea;
+      color: white;
+    }
+
+    .message:hover .reply-btn {
+      opacity: 1;
+    }
+
+    .reply-btn:hover {
+      transform: scale(1.05);
     }
 
     .message-content {
@@ -199,10 +239,91 @@
       margin-top: 5px;
     }
 
+    /* Mensajes citados/respuestas */
+    .quoted-message {
+      background: rgba(0,0,0,0.1);
+      border-left: 3px solid #667eea;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      position: relative;
+    }
+
+    .message.own .quoted-message {
+      background: rgba(255,255,255,0.2);
+      border-left-color: #ffffff;
+    }
+
+    .quoted-author {
+      font-weight: bold;
+      font-size: 0.8rem;
+      margin-bottom: 4px;
+      opacity: 0.8;
+    }
+
+    .quoted-content {
+      opacity: 0.9;
+      font-style: italic;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
     .chat-input {
       padding: 20px;
       background: white;
       border-top: 1px solid #e1e8ed;
+    }
+
+    /* Preview de respuesta */
+    .reply-preview {
+      display: none;
+      background: #f0f2f5;
+      padding: 10px 15px;
+      border-left: 3px solid #667eea;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      position: relative;
+    }
+
+    .reply-preview.active {
+      display: block;
+    }
+
+    .reply-preview-header {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .reply-preview-content {
+      font-size: 0.9rem;
+      color: #333;
+      font-style: italic;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .cancel-reply {
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+    }
+
+    .cancel-reply:hover {
+      background: #e1e8ed;
+      color: #666;
     }
 
     .input-container {
@@ -222,6 +343,11 @@
 
     .input-container input:focus {
       border-color: #667eea;
+    }
+
+    .input-container input.replying {
+      border-color: #667eea;
+      background: #f8f9ff;
     }
 
     .status {
@@ -279,6 +405,27 @@
       border-radius: 10px;
     }
 
+    /* Indicador de respuesta en input */
+    .input-reply-indicator {
+      position: absolute;
+      left: 25px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #667eea;
+      font-size: 0.9rem;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .input-container.replying .input-reply-indicator {
+      opacity: 1;
+    }
+
+    .input-container.replying input {
+      padding-left: 45px;
+    }
+
     @media (max-width: 600px) {
       .container {
         border-radius: 0;
@@ -297,6 +444,10 @@
       .message {
         max-width: 90%;
       }
+
+      .reply-btn {
+        opacity: 1;
+      }
     }
   </style>
 </head>
@@ -304,7 +455,7 @@
   <div class="container">
     <div class="header">
       <h1>🚀 Chat Ultra Épico 🚀</h1>
-      <p>Crea salas y chatea en tiempo real</p>
+      <p>Crea salas, chatea y responde mensajes</p>
     </div>
 
     <div id="status" class="status info">Conectando...</div>
@@ -341,11 +492,21 @@
       </div>
 
       <div id="chat-messages" class="chat-messages">
-        <div class="system-message">¡Bienvenido! Escribe tu primer mensaje 💬</div>
+        <div class="system-message">¡Bienvenido! Escribe tu primer mensaje o responde a otros 💬</div>
       </div>
 
       <div class="chat-input">
+        <!-- Preview de respuesta -->
+        <div id="reply-preview" class="reply-preview">
+          <div class="reply-preview-header">
+            <span>📝 Respondiendo a <strong id="reply-to-user"></strong></span>
+            <button id="cancel-reply" class="cancel-reply">❌ Cancelar</button>
+          </div>
+          <div id="reply-preview-content" class="reply-preview-content"></div>
+        </div>
+
         <form id="message-form" class="input-container">
+          <div class="input-reply-indicator">↳</div>
           <input 
             id="message-input" 
             type="text" 
