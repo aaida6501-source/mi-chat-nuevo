@@ -103,10 +103,33 @@ function formatFileSize(bytes) {
 // Función para convertir archivo a Base64
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
+    console.log(`🔄 Iniciando conversión de ${file.name} (${formatFileSize(file.size)}) a Base64...`);
+    
     const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = error => reject(error);
+    
+    reader.onload = function(e) {
+      console.log(`✅ Conversión exitosa de ${file.name}`);
+      resolve(e.target.result);
+    };
+    
+    reader.onerror = function(error) {
+      console.error(`❌ Error convirtiendo ${file.name}:`, error);
+      reject(error);
+    };
+    
+    reader.onprogress = function(e) {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        console.log(`📊 Progreso ${file.name}: ${percentComplete.toFixed(1)}%`);
+      }
+    };
+    
+    try {
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error(`❌ Error iniciando lectura de ${file.name}:`, error);
+      reject(error);
+    }
   });
 }
 
@@ -462,39 +485,57 @@ function displayParticipants(participants) {
 
 // Función para procesar archivos
 async function processFiles(files, messageText = '') {
-  if (!files || files.length === 0) return;
+  if (!files || files.length === 0) {
+    console.log('⚠️ No hay archivos para procesar');
+    return;
+  }
   
-  showStatus(`Procesando ${files.length} archivo(s)...`, 'info');
+  if (!messagesRef || !currentUser) {
+    console.error('❌ No hay conexión activa para enviar archivos');
+    showStatus('Error: No hay conexión activa', 'error');
+    return;
+  }
+  
+  console.log(`📎 Procesando ${files.length} archivo(s)...`);
+  showStatus(`Subiendo ${files.length} archivo(s)...`, 'info');
+  
+  let processedCount = 0;
   
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
     
     try {
-      console.log(`📎 Procesando archivo: ${file.name}`);
+      console.log(`📎 Procesando archivo ${i + 1}/${files.length}: ${file.name}`);
       
-      // Validar tamaño (máximo 5MB por archivo)
-      if (file.size > 5 * 1024 * 1024) {
-        showStatus(`Archivo ${file.name} es muy grande (máx. 5MB)`, 'error');
+      // Validar tamaño (máximo 2MB por archivo - reducido para mejor rendimiento)
+      if (file.size > 2 * 1024 * 1024) {
+        console.warn(`⚠️ Archivo ${file.name} muy grande: ${formatFileSize(file.size)}`);
+        showStatus(`${file.name} es muy grande (máx. 2MB)`, 'error');
         continue;
       }
       
       // Convertir a Base64
+      console.log(`🔄 Convirtiendo ${file.name} a Base64...`);
       const fileData = await fileToBase64(file);
+      
+      if (!fileData) {
+        throw new Error('Error al convertir archivo');
+      }
       
       // Preparar datos del mensaje
       const messageData = {
         type: 'file',
         fileName: file.name,
         fileSize: file.size,
-        fileType: file.type,
+        fileType: file.type || 'application/octet-stream',
         fileData: fileData,
-        content: i === 0 ? messageText : '', // Solo en el primer archivo
+        content: (i === 0 && messageText) ? messageText : '', // Solo en el primer archivo
         userName: currentUser.name,
         userId: currentUser.id,
         timestamp: firebase.database.ServerValue.TIMESTAMP
       };
       
-      // Agregar información de respuesta si existe
+      // Agregar información de respuesta si existe (solo en el primer archivo)
       if (replyingTo && i === 0) {
         messageData.replyTo = {
           messageId: replyingTo.messageId,
@@ -504,12 +545,15 @@ async function processFiles(files, messageText = '') {
       }
       
       // Enviar archivo
+      console.log(`📤 Enviando archivo a Firebase: ${file.name}`);
       await messagesRef.push(messageData);
-      console.log(`✅ Archivo enviado: ${file.name}`);
+      
+      processedCount++;
+      console.log(`✅ Archivo enviado exitosamente: ${file.name}`);
       
     } catch (error) {
       console.error(`❌ Error procesando ${file.name}:`, error);
-      showStatus(`Error enviando ${file.name}`, 'error');
+      showStatus(`Error con ${file.name}: ${error.message}`, 'error');
     }
   }
   
@@ -518,12 +562,19 @@ async function processFiles(files, messageText = '') {
     cancelReply();
   }
   
-  showStatus('¡Archivos enviados! 📎', 'success');
+  if (processedCount > 0) {
+    showStatus(`✅ ${processedCount} archivo(s) enviado(s)!`, 'success');
+    console.log(`🎉 Proceso completado: ${processedCount}/${files.length} archivos enviados`);
+  } else {
+    showStatus('❌ No se pudo enviar ningún archivo', 'error');
+  }
+  
+  // Limpiar estado después de 3 segundos
   setTimeout(() => {
     if (currentState === AppState.CHAT) {
       showStatus('', 'info');
     }
-  }, 2000);
+  }, 3000);
 }
 
 // Función para enviar mensaje de texto
@@ -769,39 +820,74 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   
-  // Inputs de archivos
+  // Inputs de archivos con debugging
   const imageInput = document.getElementById('image-input');
   const documentInput = document.getElementById('document-input');
   const fileInput = document.getElementById('file-input');
   
+  console.log('🔧 Configurando event listeners de archivos...');
+  console.log('📷 Image input encontrado:', !!imageInput);
+  console.log('📄 Document input encontrado:', !!documentInput);
+  console.log('📎 File input encontrado:', !!fileInput);
+  
   if (imageInput) {
-    imageInput.addEventListener('change', (e) => {
+    imageInput.addEventListener('change', function(e) {
+      console.log('📷 Image input change event triggered');
+      console.log('Files selected:', e.target.files.length);
+      
       const files = Array.from(e.target.files);
-      const messageText = messageInput ? messageInput.value.trim() : '';
-      if (messageInput) messageInput.value = '';
-      processFiles(files, messageText);
-      e.target.value = '';
+      if (files.length > 0) {
+        const messageText = messageInput ? messageInput.value.trim() : '';
+        if (messageInput) messageInput.value = '';
+        
+        console.log(`📷 Procesando ${files.length} imágenes...`);
+        processFiles(files, messageText);
+      }
+      e.target.value = ''; // Reset input
     });
+    console.log('✅ Image input listener configurado');
+  } else {
+    console.error('❌ No se encontró image-input');
   }
   
   if (documentInput) {
-    documentInput.addEventListener('change', (e) => {
+    documentInput.addEventListener('change', function(e) {
+      console.log('📄 Document input change event triggered');
+      console.log('Files selected:', e.target.files.length);
+      
       const files = Array.from(e.target.files);
-      const messageText = messageInput ? messageInput.value.trim() : '';
-      if (messageInput) messageInput.value = '';
-      processFiles(files, messageText);
-      e.target.value = '';
+      if (files.length > 0) {
+        const messageText = messageInput ? messageInput.value.trim() : '';
+        if (messageInput) messageInput.value = '';
+        
+        console.log(`📄 Procesando ${files.length} documentos...`);
+        processFiles(files, messageText);
+      }
+      e.target.value = ''; // Reset input
     });
+    console.log('✅ Document input listener configurado');
+  } else {
+    console.error('❌ No se encontró document-input');
   }
   
   if (fileInput) {
-    fileInput.addEventListener('change', (e) => {
+    fileInput.addEventListener('change', function(e) {
+      console.log('📎 File input change event triggered');
+      console.log('Files selected:', e.target.files.length);
+      
       const files = Array.from(e.target.files);
-      const messageText = messageInput ? messageInput.value.trim() : '';
-      if (messageInput) messageInput.value = '';
-      processFiles(files, messageText);
-      e.target.value = '';
+      if (files.length > 0) {
+        const messageText = messageInput ? messageInput.value.trim() : '';
+        if (messageInput) messageInput.value = '';
+        
+        console.log(`📎 Procesando ${files.length} archivos...`);
+        processFiles(files, messageText);
+      }
+      e.target.value = ''; // Reset input
     });
+    console.log('✅ File input listener configurado');
+  } else {
+    console.error('❌ No se encontró file-input');
   }
   
   // Cerrar modal al hacer click fuera de la imagen
