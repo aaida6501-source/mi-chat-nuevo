@@ -1,4 +1,4 @@
-console.log('🚀 Iniciando ChatFlow - Comunicación Moderna...');
+console.log('🚀 Iniciando ChatFlow Pro - Versión Móvil Optimizada...');
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -32,7 +32,7 @@ const AppState = {
 
 let currentState = AppState.WELCOME;
 
-// Función para mostrar estado en la barra superior
+// Función para mostrar estado en la barra
 function showStatus(message, type = 'info') {
   const statusBar = document.getElementById('status-bar');
   if (statusBar) {
@@ -47,22 +47,26 @@ function generateUserId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
 }
 
-// Función para obtener iniciales del nombre
+// Función para obtener iniciales
 function getInitials(name) {
-  return name.split(' ').map(word => word[0]).join('').toUpperCase().substring(0, 2);
+  return name.split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
 }
 
-// Función para obtener color basado en el nombre
+// Función para obtener color de avatar
 function getAvatarColor(name) {
   const colors = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
-    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
+    'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+    'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+    'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+    'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+    'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+    'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+    'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
+    'linear-gradient(135deg, #84cc16 0%, #65a30d 100%)'
   ];
   
   let hash = 0;
@@ -89,76 +93,6 @@ function changeState(newState) {
   }
 }
 
-// Función para obtener icono de archivo
-function getFileIcon(fileName) {
-  const extension = fileName.split('.').pop().toLowerCase();
-  
-  const icons = {
-    // Imágenes
-    'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'webp': '🖼️', 'svg': '🖼️',
-    // Documentos
-    'pdf': '📄', 'doc': '📄', 'docx': '📄', 'txt': '📄', 'rtf': '📄',
-    // Hojas de cálculo
-    'xlsx': '📊', 'xls': '📊', 'csv': '📊',
-    // Presentaciones
-    'ppt': '📽️', 'pptx': '📽️',
-    // Audio
-    'mp3': '🎵', 'wav': '🎵', 'ogg': '🎵', 'm4a': '🎵',
-    // Video
-    'mp4': '🎬', 'avi': '🎬', 'mov': '🎬', 'mkv': '🎬',
-    // Archivos comprimidos
-    'zip': '📦', 'rar': '📦', '7z': '📦',
-    // Código
-    'js': '💻', 'html': '💻', 'css': '💻', 'py': '💻', 'java': '💻'
-  };
-  
-  return icons[extension] || '📎';
-}
-
-// Función para formatear tamaño de archivo
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-// Función para convertir archivo a Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    console.log(`🔄 Convirtiendo ${file.name} (${formatFileSize(file.size)}) a Base64...`);
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-      console.log(`✅ Conversión exitosa de ${file.name}`);
-      resolve(e.target.result);
-    };
-    
-    reader.onerror = function(error) {
-      console.error(`❌ Error convirtiendo ${file.name}:`, error);
-      reject(error);
-    };
-    
-    reader.onprogress = function(e) {
-      if (e.lengthComputable) {
-        const percentComplete = (e.loaded / e.total) * 100;
-        if (percentComplete % 25 === 0) { // Log cada 25%
-          console.log(`📊 Progreso ${file.name}: ${percentComplete.toFixed(0)}%`);
-        }
-      }
-    };
-    
-    try {
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error(`❌ Error iniciando lectura de ${file.name}:`, error);
-      reject(error);
-    }
-  });
-}
-
 // Función para inicializar Firebase
 function initializeFirebase() {
   try {
@@ -180,21 +114,21 @@ function initializeFirebase() {
         console.log('🌐 Conectado a Firebase');
         isConnected = true;
         if (currentState === AppState.WELCOME) {
-          showStatus('Listo para comenzar - Ingresa tus datos', 'success');
+          showStatus('Listo para comenzar', 'success');
         } else {
-          showStatus('Conectado y sincronizado', 'success');
+          showStatus('Conectado', 'success');
         }
       } else {
         console.log('❌ Desconectado de Firebase');
         isConnected = false;
-        showStatus('Sin conexión - Reintentando...', 'error');
+        showStatus('Sin conexión', 'error');
       }
     });
     
     return true;
   } catch (error) {
     console.error('❌ Error al inicializar Firebase:', error);
-    showStatus(`Error de conexión: ${error.message}`, 'error');
+    showStatus('Error de conexión', 'error');
     return false;
   }
 }
@@ -214,7 +148,7 @@ function cleanupListeners() {
 // Función para unirse a una sala
 function joinRoom(roomName, username) {
   if (!isConnected || !database) {
-    showStatus('Sin conexión a Firebase', 'error');
+    showStatus('Sin conexión', 'error');
     return false;
   }
 
@@ -257,17 +191,7 @@ function joinRoom(roomName, username) {
   changeState(AppState.CHAT);
   
   // Actualizar UI del header
-  const roomAvatar = document.getElementById('room-avatar');
-  const currentRoomTitle = document.getElementById('current-room');
-  
-  if (roomAvatar) {
-    roomAvatar.textContent = getInitials(roomName);
-    roomAvatar.style.background = getAvatarColor(roomName);
-  }
-  
-  if (currentRoomTitle) {
-    currentRoomTitle.textContent = roomName;
-  }
+  updateChatHeader(roomName);
   
   setupMessageListener();
   setupParticipantsListener();
@@ -281,14 +205,37 @@ function joinRoom(roomName, username) {
     }
   }, 30000);
   
-  showStatus('¡Conectado y listo para chatear!', 'success');
+  showStatus('Conectado', 'success');
   
+  // Focus al input después de un momento
   setTimeout(() => {
     const messageInput = document.getElementById('message-input');
-    if (messageInput) messageInput.focus();
+    if (messageInput) {
+      messageInput.focus();
+    }
   }, 500);
   
   return true;
+}
+
+// Función para actualizar header del chat
+function updateChatHeader(roomName) {
+  const roomAvatar = document.getElementById('room-avatar');
+  const roomTitle = document.getElementById('room-title');
+  const roomStatusText = document.getElementById('room-status-text');
+  
+  if (roomAvatar) {
+    roomAvatar.textContent = getInitials(roomName);
+    roomAvatar.style.background = getAvatarColor(roomName);
+  }
+  
+  if (roomTitle) {
+    roomTitle.textContent = roomName;
+  }
+  
+  if (roomStatusText) {
+    roomStatusText.textContent = 'Activo';
+  }
 }
 
 // Función para configurar listener de mensajes
@@ -341,12 +288,20 @@ function setupParticipantsListener() {
         }
       });
       
-      displayParticipants(participants);
+      updateParticipantCount(participants.length);
       console.log(`👥 ${participants.length} participantes activos`);
     } catch (error) {
       console.error('❌ Error al cargar participantes:', error);
     }
   });
+}
+
+// Función para actualizar contador de participantes
+function updateParticipantCount(count) {
+  const participantNumber = document.getElementById('participant-number');
+  if (participantNumber) {
+    participantNumber.textContent = count;
+  }
 }
 
 // Función para mostrar mensajes
@@ -363,7 +318,7 @@ function displayMessages(messages) {
   container.innerHTML = '';
   
   if (messages.length === 0) {
-    container.innerHTML = '<div class="system-message">¡Comienza la conversación! Escribe algo o comparte un archivo 🚀</div>';
+    container.innerHTML = '<div class="system-message">¡Comienza la conversación! 💬</div>';
     return;
   }
   
@@ -418,49 +373,11 @@ function displayMessages(messages) {
         `;
       }
       
-      let contentHtml = '';
       let actionsHtml = '';
-      
-      if (msg.type === 'file') {
-        const fileIcon = getFileIcon(msg.fileName);
-        
-        if (msg.fileType && msg.fileType.startsWith('image/')) {
-          contentHtml = `
-            <div class="file-message">
-              <div class="file-icon">${fileIcon}</div>
-              <div class="file-details">
-                <div class="file-name">${escapeHtml(msg.fileName)}</div>
-                <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
-              </div>
-            </div>
-            <img class="image-preview" src="${msg.fileData}" alt="${escapeHtml(msg.fileName)}" onclick="openImageModal('${msg.fileData}')">
-          `;
-        } else {
-          contentHtml = `
-            <div class="file-message">
-              <div class="file-icon">${fileIcon}</div>
-              <div class="file-details">
-                <div class="file-name">${escapeHtml(msg.fileName)}</div>
-                <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
-              </div>
-              <button class="file-download" onclick="downloadFile('${msg.fileData}', '${escapeHtml(msg.fileName)}')">
-                ⬇️ Descargar
-              </button>
-            </div>
-          `;
-        }
-        
-        if (msg.content && msg.content.trim()) {
-          contentHtml += `<div style="margin-top: 8px;">${escapeHtml(msg.content)}</div>`;
-        }
-      } else {
-        contentHtml = escapeHtml(msg.content);
-      }
-      
       if (!isOwn) {
         actionsHtml = `
           <div class="message-actions">
-            <div class="action-button" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content || msg.fileName || 'archivo')}')" title="Responder">
+            <div class="action-button" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content)}')" title="Responder">
               ↩️
             </div>
           </div>
@@ -473,26 +390,28 @@ function displayMessages(messages) {
           ${headerHtml}
           <div class="message-bubble">
             ${quotedHtml}
-            ${contentHtml}
+            ${escapeHtml(msg.content)}
             ${actionsHtml}
           </div>
         </div>
       `;
       
-      // Agregar doble click para respuesta rápida
+      // Agregar evento de doble toque para respuesta rápida en móvil
       if (!isOwn) {
-        messageDiv.addEventListener('dblclick', () => {
-          startReply(msg.id, msg.userName, msg.content || msg.fileName || 'archivo');
+        let touchTime = 0;
+        messageDiv.addEventListener('touchend', (e) => {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - touchTime;
+          if (tapLength < 500 && tapLength > 0) {
+            e.preventDefault();
+            startReply(msg.id, msg.userName, msg.content);
+          }
+          touchTime = currentTime;
         });
       }
     }
     
     container.appendChild(messageDiv);
-    
-    // Animar entrada del mensaje
-    setTimeout(() => {
-      messageDiv.style.animationDelay = `${index * 50}ms`;
-    }, 10);
   });
   
   // Scroll al final si estaba al final
@@ -500,35 +419,6 @@ function displayMessages(messages) {
     setTimeout(() => {
       container.scrollTop = container.scrollHeight;
     }, 100);
-  }
-}
-
-// Función para mostrar participantes
-function displayParticipants(participants) {
-  const participantsList = document.getElementById('participants-list');
-  const participantCount = document.getElementById('participant-count');
-  
-  if (!participantsList || !participantCount) return;
-  
-  participantCount.textContent = `${participants.length} ${participants.length === 1 ? 'participante' : 'participantes'} conectados`;
-  
-  participantsList.innerHTML = '';
-  
-  participants.slice(0, 8).forEach(participant => { // Máximo 8 avatares
-    const avatarDiv = document.createElement('div');
-    avatarDiv.className = `participant-avatar ${participant.id === currentUser.id ? 'you' : ''}`;
-    avatarDiv.style.background = participant.color || getAvatarColor(participant.name);
-    avatarDiv.textContent = participant.avatar || getInitials(participant.name);
-    avatarDiv.title = participant.id === currentUser.id ? `${participant.name} (tú)` : participant.name;
-    participantsList.appendChild(avatarDiv);
-  });
-  
-  if (participants.length > 8) {
-    const moreDiv = document.createElement('div');
-    moreDiv.className = 'participant-avatar';
-    moreDiv.textContent = `+${participants.length - 8}`;
-    moreDiv.title = `${participants.length - 8} participantes más`;
-    participantsList.appendChild(moreDiv);
   }
 }
 
@@ -577,96 +467,6 @@ function cancelReply() {
   }
 }
 
-// Función para procesar archivos
-async function processFiles(files, messageText = '') {
-  if (!files || files.length === 0) {
-    console.log('⚠️ No hay archivos para procesar');
-    return;
-  }
-  
-  if (!messagesRef || !currentUser) {
-    console.error('❌ No hay conexión activa');
-    showStatus('Error: No hay conexión activa', 'error');
-    return;
-  }
-  
-  console.log(`📎 Procesando ${files.length} archivo(s)...`);
-  showStatus(`Subiendo ${files.length} archivo(s)...`, 'info');
-  
-  let processedCount = 0;
-  
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    
-    try {
-      console.log(`📎 Procesando archivo ${i + 1}/${files.length}: ${file.name}`);
-      
-      // Validar tamaño (máximo 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        console.warn(`⚠️ Archivo ${file.name} muy grande: ${formatFileSize(file.size)}`);
-        showStatus(`${file.name} es muy grande (máx. 2MB)`, 'error');
-        continue;
-      }
-      
-      // Convertir a Base64
-      const fileData = await fileToBase64(file);
-      
-      if (!fileData) {
-        throw new Error('Error al convertir archivo');
-      }
-      
-      // Preparar datos del mensaje
-      const messageData = {
-        type: 'file',
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type || 'application/octet-stream',
-        fileData: fileData,
-        content: (i === 0 && messageText) ? messageText : '',
-        userName: currentUser.name,
-        userId: currentUser.id,
-        userAvatar: currentUser.avatar,
-        userColor: currentUser.color,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
-      };
-      
-      // Agregar respuesta si existe
-      if (replyingTo && i === 0) {
-        messageData.replyTo = {
-          messageId: replyingTo.messageId,
-          userName: replyingTo.userName,
-          content: replyingTo.content.substring(0, 100)
-        };
-      }
-      
-      // Enviar archivo
-      await messagesRef.push(messageData);
-      processedCount++;
-      console.log(`✅ Archivo enviado: ${file.name}`);
-      
-    } catch (error) {
-      console.error(`❌ Error procesando ${file.name}:`, error);
-      showStatus(`Error con ${file.name}: ${error.message}`, 'error');
-    }
-  }
-  
-  if (replyingTo) {
-    cancelReply();
-  }
-  
-  if (processedCount > 0) {
-    showStatus(`✅ ${processedCount} archivo(s) enviado(s)`, 'success');
-  } else {
-    showStatus('❌ No se pudo enviar ningún archivo', 'error');
-  }
-  
-  setTimeout(() => {
-    if (currentState === AppState.CHAT) {
-      showStatus('Conectado y sincronizado', 'success');
-    }
-  }, 3000);
-}
-
 // Función para enviar mensaje
 function sendMessage() {
   console.log('📤 Enviando mensaje...');
@@ -687,14 +487,14 @@ function sendMessage() {
   }
   
   if (!isConnected) {
-    showStatus('Sin conexión - Reintentando...', 'error');
+    showStatus('Sin conexión', 'error');
     return;
   }
   
   // Deshabilitar botón temporalmente
   if (sendButton) {
     sendButton.disabled = true;
-    sendButton.innerHTML = '<span>⏳</span>Enviando...';
+    sendButton.innerHTML = '<span>⏳</span>';
   }
   
   const messageData = {
@@ -727,12 +527,12 @@ function sendMessage() {
     })
     .catch((error) => {
       console.error('❌ Error al enviar mensaje:', error);
-      showStatus(`Error al enviar: ${error.message}`, 'error');
+      showStatus('Error al enviar', 'error');
     })
     .finally(() => {
       if (sendButton) {
         sendButton.disabled = false;
-        sendButton.innerHTML = '<span>🚀</span>Enviar';
+        sendButton.innerHTML = '<span>📤</span>';
       }
       input.focus();
     });
@@ -768,12 +568,16 @@ function leaveRoom() {
   currentMessages = [];
   
   changeState(AppState.WELCOME);
-  showStatus('Listo para comenzar - Ingresa tus datos', 'success');
+  showStatus('Listo para comenzar', 'success');
   
   // Limpiar campos
   document.getElementById('username').value = '';
   document.getElementById('room-name').value = '';
-  document.getElementById('username').focus();
+  
+  // Focus al username después de un momento
+  setTimeout(() => {
+    document.getElementById('username').focus();
+  }, 500);
 }
 
 // Función para escapar HTML
@@ -792,30 +596,30 @@ function handleJoinRoom(isCreating = false) {
   const roomName = roomNameInput.value.trim();
   
   if (!username) {
-    showStatus('Por favor, ingresa tu nombre', 'error');
+    showStatus('Ingresa tu nombre', 'error');
     usernameInput.focus();
     return;
   }
   
   if (!roomName) {
-    showStatus('Por favor, ingresa el nombre de la sala', 'error');
+    showStatus('Ingresa el nombre de la sala', 'error');
     roomNameInput.focus();
     return;
   }
   
   if (username.length < 2) {
-    showStatus('El nombre debe tener al menos 2 caracteres', 'error');
+    showStatus('Nombre muy corto', 'error');
     usernameInput.focus();
     return;
   }
   
   if (roomName.length < 2) {
-    showStatus('El nombre de la sala debe tener al menos 2 caracteres', 'error');
+    showStatus('Nombre de sala muy corto', 'error');
     roomNameInput.focus();
     return;
   }
   
-  showStatus(isCreating ? 'Creando sala...' : 'Uniéndose a la sala...', 'info');
+  showStatus(isCreating ? 'Creando sala...' : 'Uniéndose...', 'info');
   
   if (joinRoom(roomName, username)) {
     console.log(`✅ ${isCreating ? 'Sala creada' : 'Unido a sala'} exitosamente`);
@@ -825,54 +629,12 @@ function handleJoinRoom(isCreating = false) {
 // Funciones globales para HTML
 window.startReply = startReply;
 
-window.openImageModal = function(imageSrc) {
-  const modal = document.getElementById('image-modal');
-  const modalImage = document.getElementById('modal-image');
-  
-  if (modal && modalImage) {
-    modalImage.src = imageSrc;
-    modal.classList.add('active');
-    
-    // Cerrar con Escape
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') {
-        closeImageModal();
-        document.removeEventListener('keydown', handleEscape);
-      }
-    };
-    document.addEventListener('keydown', handleEscape);
-  }
-};
-
-window.closeImageModal = function() {
-  const modal = document.getElementById('image-modal');
-  if (modal) {
-    modal.classList.remove('active');
-  }
-};
-
-window.downloadFile = function(fileData, fileName) {
-  try {
-    const link = document.createElement('a');
-    link.href = fileData;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showStatus(`Descargando ${fileName}...`, 'success');
-  } catch (error) {
-    console.error('Error descargando archivo:', error);
-    showStatus('Error al descargar archivo', 'error');
-  }
-};
-
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🎯 DOM cargado, inicializando ChatFlow...');
+  console.log('🎯 DOM cargado, inicializando ChatFlow Pro...');
   
   if (!initializeFirebase()) {
-    showStatus('Error al inicializar la aplicación', 'error');
+    showStatus('Error de inicialización', 'error');
     return;
   }
   
@@ -884,10 +646,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const leaveBtn = document.getElementById('leave-btn');
   const cancelReplyBtn = document.getElementById('cancel-reply');
   
-  if (joinBtn) joinBtn.addEventListener('click', () => handleJoinRoom(false));
-  if (createBtn) createBtn.addEventListener('click', () => handleJoinRoom(true));
-  if (leaveBtn) leaveBtn.addEventListener('click', leaveRoom);
-  if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', cancelReply);
+  if (joinBtn) {
+    joinBtn.addEventListener('click', () => handleJoinRoom(false));
+  }
+  
+  if (createBtn) {
+    createBtn.addEventListener('click', () => handleJoinRoom(true));
+  }
+  
+  if (leaveBtn) {
+    leaveBtn.addEventListener('click', leaveRoom);
+  }
+  
+  if (cancelReplyBtn) {
+    cancelReplyBtn.addEventListener('click', cancelReply);
+  }
   
   // Inputs de bienvenida
   const usernameInput = document.getElementById('username');
@@ -901,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
     
-    // Auto-focus después de un momento
+    // Auto-focus después de cargar
     setTimeout(() => usernameInput.focus(), 1000);
   }
   
@@ -935,81 +708,17 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelReply();
       }
     });
-    
-    // Indicador de escritura (futuro)
-    let typingTimeout;
-    messageInput.addEventListener('input', () => {
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        // Aquí se podría implementar indicador de "está escribiendo"
-      }, 1000);
-    });
   }
   
-  // Inputs de archivos con debugging mejorado
-  const imageInput = document.getElementById('image-input');
-  const documentInput = document.getElementById('document-input');
-  const fileInput = document.getElementById('file-input');
-  
-  console.log('🔧 Configurando manejadores de archivos...');
-  
-  if (imageInput) {
-    imageInput.addEventListener('change', function(e) {
-      console.log('📷 Seleccionadas', e.target.files.length, 'imágenes');
-      const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        const messageText = messageInput ? messageInput.value.trim() : '';
-        if (messageInput) messageInput.value = '';
-        processFiles(files, messageText);
-      }
-      e.target.value = '';
-    });
-  }
-  
-  if (documentInput) {
-    documentInput.addEventListener('change', function(e) {
-      console.log('📄 Seleccionados', e.target.files.length, 'documentos');
-      const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        const messageText = messageInput ? messageInput.value.trim() : '';
-        if (messageInput) messageInput.value = '';
-        processFiles(files, messageText);
-      }
-      e.target.value = '';
-    });
-  }
-  
-  if (fileInput) {
-    fileInput.addEventListener('change', function(e) {
-      console.log('📎 Seleccionados', e.target.files.length, 'archivos');
-      const files = Array.from(e.target.files);
-      if (files.length > 0) {
-        const messageText = messageInput ? messageInput.value.trim() : '';
-        if (messageInput) messageInput.value = '';
-        processFiles(files, messageText);
-      }
-      e.target.value = '';
-    });
-  }
-  
-  // Cerrar modal de imagen al hacer click fuera
-  const imageModal = document.getElementById('image-modal');
-  if (imageModal) {
-    imageModal.addEventListener('click', (e) => {
-      if (e.target === imageModal) {
-        closeImageModal();
-      }
-    });
-  }
-  
-  // Atajos de teclado globales
-  document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + Enter para enviar mensaje rápido
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && currentState === AppState.CHAT) {
+  // Prevenir zoom en iOS
+  document.addEventListener('touchstart', (e) => {
+    if (e.touches.length > 1) {
       e.preventDefault();
-      sendMessage();
     }
-    
+  });
+  
+  // Atajos de teclado
+  document.addEventListener('keydown', (e) => {
     // Escape para cancelar respuesta
     if (e.key === 'Escape' && replyingTo) {
       e.preventDefault();
@@ -1017,13 +726,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   
-  console.log('🎉 ChatFlow inicializado correctamente');
+  console.log('🎉 ChatFlow Pro inicializado correctamente');
 });
 
 // Manejo de errores y limpieza
 window.addEventListener('error', (event) => {
   console.error('❌ Error global:', event.error);
-  showStatus('Error inesperado - Recarga la página', 'error');
+  showStatus('Error inesperado', 'error');
 });
 
 window.addEventListener('beforeunload', () => {
@@ -1032,11 +741,10 @@ window.addEventListener('beforeunload', () => {
   }
 });
 
-// Manejo de visibilidad de la página
+// Manejo de visibilidad de la página para móvil
 document.addEventListener('visibilitychange', () => {
   if (currentUser && participantsRef) {
     if (document.visibilityState === 'visible') {
-      // Usuario volvió a la pestaña
       participantsRef.child(currentUser.id).update({
         lastSeen: firebase.database.ServerValue.TIMESTAMP
       });
@@ -1044,4 +752,4 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-console.log('📜 ChatFlow cargado completamente - Listo para comunicación moderna');
+console.log('📜 ChatFlow Pro cargado - Optimizado para móvil');
