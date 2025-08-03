@@ -1,4 +1,4 @@
-console.log('🚀 Iniciando Chat Ultra Épico con Respuestas...');
+console.log('🚀 Iniciando Chat Ultra Épico Dark Mode con Archivos...');
 
 // Configuración de Firebase
 const firebaseConfig = {
@@ -63,6 +63,51 @@ function changeState(newState) {
     welcomeScreen.style.display = 'none';
     chatScreen.style.display = 'flex';
   }
+}
+
+// Función para obtener icono según tipo de archivo
+function getFileIcon(fileName) {
+  const extension = fileName.split('.').pop().toLowerCase();
+  
+  const icons = {
+    // Imágenes
+    'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️', 'webp': '🖼️', 'svg': '🖼️',
+    // Documentos
+    'pdf': '📄', 'doc': '📄', 'docx': '📄', 'txt': '📄', 'rtf': '📄',
+    // Hojas de cálculo
+    'xlsx': '📊', 'xls': '📊', 'csv': '📊',
+    // Presentaciones
+    'ppt': '📽️', 'pptx': '📽️',
+    // Audio
+    'mp3': '🎵', 'wav': '🎵', 'ogg': '🎵', 'm4a': '🎵',
+    // Video
+    'mp4': '🎬', 'avi': '🎬', 'mov': '🎬', 'mkv': '🎬',
+    // Archivos comprimidos
+    'zip': '📦', 'rar': '📦', '7z': '📦',
+    // Código
+    'js': '💻', 'html': '💻', 'css': '💻', 'py': '💻', 'java': '💻'
+  };
+  
+  return icons[extension] || '📎';
+}
+
+// Función para formatear tamaño de archivo
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Función para convertir archivo a Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = error => reject(error);
+  });
 }
 
 // Función para inicializar Firebase
@@ -251,7 +296,7 @@ function displayMessages(messages) {
   chatContainer.innerHTML = '';
   
   if (messages.length === 0) {
-    chatContainer.innerHTML = '<div class="system-message">¡Sé el primero en escribir! 💬</div>';
+    chatContainer.innerHTML = '<div class="system-message">¡Sé el primero en escribir o compartir archivos! 💬📎</div>';
     return;
   }
   
@@ -263,38 +308,75 @@ function displayMessages(messages) {
       messageDiv.textContent = msg.content;
     } else {
       const isOwn = msg.userId === currentUser.id;
-      messageDiv.className = `message ${isOwn ? 'own' : 'other'}`;
+      messageDiv.className = `message ${isOwn ? 'own' : 'other'} ${msg.type === 'file' ? 'file' : ''}`;
       messageDiv.setAttribute('data-message-id', msg.id);
       
       const timestamp = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
       
       let quotedHtml = '';
       if (msg.replyTo) {
-        const quotedMessage = findMessageById(msg.replyTo.messageId);
-        if (quotedMessage) {
-          quotedHtml = `
-            <div class="quoted-message">
-              <div class="quoted-author">📝 ${msg.replyTo.userName}</div>
-              <div class="quoted-content">${escapeHtml(msg.replyTo.content)}</div>
+        quotedHtml = `
+          <div class="quoted-message">
+            <div class="quoted-author">📝 ${msg.replyTo.userName}</div>
+            <div class="quoted-content">${escapeHtml(msg.replyTo.content)}</div>
+          </div>
+        `;
+      }
+      
+      let contentHtml = '';
+      
+      if (msg.type === 'file') {
+        // Mensaje de archivo
+        const fileIcon = getFileIcon(msg.fileName);
+        
+        if (msg.fileType && msg.fileType.startsWith('image/')) {
+          // Imagen
+          contentHtml = `
+            <div class="file-preview">
+              <div class="file-icon">${fileIcon}</div>
+              <div class="file-info">
+                <div class="file-name">${escapeHtml(msg.fileName)}</div>
+                <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
+              </div>
+            </div>
+            <img class="image-preview" src="${msg.fileData}" alt="${escapeHtml(msg.fileName)}" onclick="openImageModal('${msg.fileData}')">
+          `;
+        } else {
+          // Otros archivos
+          contentHtml = `
+            <div class="file-preview">
+              <div class="file-icon">${fileIcon}</div>
+              <div class="file-info">
+                <div class="file-name">${escapeHtml(msg.fileName)}</div>
+                <div class="file-size">${formatFileSize(msg.fileSize || 0)}</div>
+              </div>
+              <button class="file-download" onclick="downloadFile('${msg.fileData}', '${escapeHtml(msg.fileName)}')">⬇️ Descargar</button>
             </div>
           `;
         }
+        
+        if (msg.content && msg.content.trim()) {
+          contentHtml += `<div class="message-content">${escapeHtml(msg.content)}</div>`;
+        }
+      } else {
+        // Mensaje de texto normal
+        contentHtml = `<div class="message-content">${escapeHtml(msg.content)}</div>`;
       }
       
       messageDiv.innerHTML = `
         <div class="message-header">
           <span>${isOwn ? 'Tú' : (msg.userName || 'Usuario')}</span>
-          ${!isOwn ? `<button class="reply-btn" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content)}')">↩️ Responder</button>` : ''}
+          ${!isOwn ? `<button class="reply-btn" onclick="startReply('${msg.id}', '${escapeHtml(msg.userName)}', '${escapeHtml(msg.content || msg.fileName || 'archivo')}')">↩️ Responder</button>` : ''}
         </div>
         ${quotedHtml}
-        <div class="message-content">${escapeHtml(msg.content)}</div>
+        ${contentHtml}
         <div class="message-time">${timestamp}</div>
       `;
       
-      // Agregar evento de click para móviles (respuesta rápida)
+      // Agregar evento de doble click para respuesta rápida
       if (!isOwn) {
         messageDiv.addEventListener('dblclick', () => {
-          startReply(msg.id, msg.userName, msg.content);
+          startReply(msg.id, msg.userName, msg.content || msg.fileName || 'archivo');
         });
       }
     }
@@ -378,7 +460,73 @@ function displayParticipants(participants) {
   });
 }
 
-// Función para enviar mensaje
+// Función para procesar archivos
+async function processFiles(files, messageText = '') {
+  if (!files || files.length === 0) return;
+  
+  showStatus(`Procesando ${files.length} archivo(s)...`, 'info');
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    
+    try {
+      console.log(`📎 Procesando archivo: ${file.name}`);
+      
+      // Validar tamaño (máximo 5MB por archivo)
+      if (file.size > 5 * 1024 * 1024) {
+        showStatus(`Archivo ${file.name} es muy grande (máx. 5MB)`, 'error');
+        continue;
+      }
+      
+      // Convertir a Base64
+      const fileData = await fileToBase64(file);
+      
+      // Preparar datos del mensaje
+      const messageData = {
+        type: 'file',
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        fileData: fileData,
+        content: i === 0 ? messageText : '', // Solo en el primer archivo
+        userName: currentUser.name,
+        userId: currentUser.id,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+      };
+      
+      // Agregar información de respuesta si existe
+      if (replyingTo && i === 0) {
+        messageData.replyTo = {
+          messageId: replyingTo.messageId,
+          userName: replyingTo.userName,
+          content: replyingTo.content.substring(0, 100)
+        };
+      }
+      
+      // Enviar archivo
+      await messagesRef.push(messageData);
+      console.log(`✅ Archivo enviado: ${file.name}`);
+      
+    } catch (error) {
+      console.error(`❌ Error procesando ${file.name}:`, error);
+      showStatus(`Error enviando ${file.name}`, 'error');
+    }
+  }
+  
+  // Cancelar respuesta después de enviar
+  if (replyingTo) {
+    cancelReply();
+  }
+  
+  showStatus('¡Archivos enviados! 📎', 'success');
+  setTimeout(() => {
+    if (currentState === AppState.CHAT) {
+      showStatus('', 'info');
+    }
+  }, 2000);
+}
+
+// Función para enviar mensaje de texto
 function sendMessage() {
   console.log('📤 Enviando mensaje...');
   
@@ -421,9 +569,8 @@ function sendMessage() {
     messageData.replyTo = {
       messageId: replyingTo.messageId,
       userName: replyingTo.userName,
-      content: replyingTo.content.substring(0, 100) // Limitar contenido citado
+      content: replyingTo.content.substring(0, 100)
     };
-    console.log('💬 Mensaje con respuesta preparado');
   }
   
   messagesRef.push(messageData)
@@ -454,7 +601,6 @@ function leaveRoom() {
   console.log('🚪 Saliendo de la sala...');
   
   if (currentUser && messagesRef) {
-    // Enviar mensaje de sistema
     messagesRef.push({
       type: 'system',
       content: `${currentUser.name} salió del chat`,
@@ -462,15 +608,12 @@ function leaveRoom() {
     });
   }
   
-  // Remover de participantes
   if (currentUser && participantsRef) {
     participantsRef.child(currentUser.id).remove();
   }
   
-  // Limpiar listeners
   cleanupListeners();
   
-  // Cancelar respuesta si estaba activa
   if (replyingTo) {
     cancelReply();
   }
@@ -482,11 +625,9 @@ function leaveRoom() {
   participantsRef = null;
   currentMessages = [];
   
-  // Volver a pantalla de bienvenida
   changeState(AppState.WELCOME);
   showStatus('Listo para crear o unirse a una sala! 🎉', 'success');
   
-  // Limpiar campos
   document.getElementById('username').value = '';
   document.getElementById('room-name').value = '';
   document.getElementById('username').focus();
@@ -538,61 +679,70 @@ function handleJoinRoom(isCreating = false) {
   }
 }
 
-// Función global para iniciar respuesta (llamada desde HTML)
+// Funciones globales para HTML
 window.startReply = startReply;
+
+window.openImageModal = function(imageSrc) {
+  const modal = document.getElementById('image-modal');
+  const modalImage = document.getElementById('modal-image');
+  
+  if (modal && modalImage) {
+    modalImage.src = imageSrc;
+    modal.classList.add('active');
+  }
+};
+
+window.closeImageModal = function() {
+  const modal = document.getElementById('image-modal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+};
+
+window.downloadFile = function(fileData, fileName) {
+  const link = document.createElement('a');
+  link.href = fileData;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🎯 DOM cargado, inicializando aplicación...');
   
-  // Inicializar Firebase
   if (!initializeFirebase()) {
     showStatus('Error al inicializar la aplicación', 'error');
     return;
   }
   
-  // Configurar pantalla inicial
   changeState(AppState.WELCOME);
   
-  // Botones de bienvenida
+  // Botones principales
   const joinBtn = document.getElementById('join-btn');
   const createBtn = document.getElementById('create-btn');
   const leaveBtn = document.getElementById('leave-btn');
   const cancelReplyBtn = document.getElementById('cancel-reply');
   
-  if (joinBtn) {
-    joinBtn.addEventListener('click', () => handleJoinRoom(false));
-  }
+  if (joinBtn) joinBtn.addEventListener('click', () => handleJoinRoom(false));
+  if (createBtn) createBtn.addEventListener('click', () => handleJoinRoom(true));
+  if (leaveBtn) leaveBtn.addEventListener('click', leaveRoom);
+  if (cancelReplyBtn) cancelReplyBtn.addEventListener('click', cancelReply);
   
-  if (createBtn) {
-    createBtn.addEventListener('click', () => handleJoinRoom(true));
-  }
-  
-  if (leaveBtn) {
-    leaveBtn.addEventListener('click', leaveRoom);
-  }
-  
-  if (cancelReplyBtn) {
-    cancelReplyBtn.addEventListener('click', cancelReply);
-  }
-  
-  // Enter en campos de bienvenida
+  // Inputs de bienvenida
   const usernameInput = document.getElementById('username');
   const roomNameInput = document.getElementById('room-name');
   
   if (usernameInput) {
     usernameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        roomNameInput.focus();
-      }
+      if (e.key === 'Enter') roomNameInput.focus();
     });
   }
   
   if (roomNameInput) {
     roomNameInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        handleJoinRoom(false);
-      }
+      if (e.key === 'Enter') handleJoinRoom(false);
     });
   }
   
@@ -613,35 +763,75 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         sendMessage();
       }
-      
-      // Cancelar respuesta con Escape
       if (e.key === 'Escape' && replyingTo) {
         cancelReply();
       }
     });
   }
   
+  // Inputs de archivos
+  const imageInput = document.getElementById('image-input');
+  const documentInput = document.getElementById('document-input');
+  const fileInput = document.getElementById('file-input');
+  
+  if (imageInput) {
+    imageInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      const messageText = messageInput ? messageInput.value.trim() : '';
+      if (messageInput) messageInput.value = '';
+      processFiles(files, messageText);
+      e.target.value = '';
+    });
+  }
+  
+  if (documentInput) {
+    documentInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      const messageText = messageInput ? messageInput.value.trim() : '';
+      if (messageInput) messageInput.value = '';
+      processFiles(files, messageText);
+      e.target.value = '';
+    });
+  }
+  
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files);
+      const messageText = messageInput ? messageInput.value.trim() : '';
+      if (messageInput) messageInput.value = '';
+      processFiles(files, messageText);
+      e.target.value = '';
+    });
+  }
+  
+  // Cerrar modal al hacer click fuera de la imagen
+  const imageModal = document.getElementById('image-modal');
+  if (imageModal) {
+    imageModal.addEventListener('click', (e) => {
+      if (e.target === imageModal) {
+        closeImageModal();
+      }
+    });
+  }
+  
   // Focus inicial
   setTimeout(() => {
-    if (usernameInput) {
-      usernameInput.focus();
-    }
+    if (usernameInput) usernameInput.focus();
   }, 500);
   
-  console.log('🎉 Aplicación con respuestas inicializada correctamente');
+  console.log('🎉 Aplicación Dark Mode con archivos inicializada');
 });
 
-// Manejo de errores globales
+// Manejo de errores y limpieza
 window.addEventListener('error', (event) => {
   console.error('❌ Error global:', event.error);
   showStatus('Error inesperado - Recarga la página', 'error');
 });
 
-// Manejar cierre de ventana/pestaña
 window.addEventListener('beforeunload', () => {
   if (currentUser && participantsRef) {
     participantsRef.child(currentUser.id).remove();
   }
 });
 
-console.log('📜 Cliente con respuestas cargado completamente');
+console.log('📜 Cliente Dark Mode con archivos cargado completamente');
