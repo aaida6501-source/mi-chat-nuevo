@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#2563eb">
   <title>ChatFlow Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -662,6 +666,62 @@
       color: var(--text-tertiary);
     }
 
+    .language-indicator {
+      background: var(--primary);
+      color: white;
+      padding: 2px 6px;
+      border-radius: var(--radius);
+      font-size: 10px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .translation-button {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .translation-button.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    }
+
+    .translation-button:active {
+      transform: scale(0.95);
+    }
+
+    .translated-message {
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.2);
+      padding: 8px 12px;
+      margin-top: 6px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .original-message {
+      opacity: 0.8;
+    }
+
+    .translation-loading {
+      color: var(--text-tertiary);
+      font-style: italic;
+    }
+
     .send-button {
       padding: 10px 16px;
       min-height: 40px;
@@ -787,6 +847,20 @@
             <input id="room-name" class="form-input" type="text" placeholder="Nombre de la sala" maxlength="30" autocomplete="off">
           </div>
 
+          <div class="form-group">
+            <label class="form-label" for="user-language">🌍 Tu idioma</label>
+            <select id="user-language" class="form-input">
+              <option value="es">🇪🇸 Español</option>
+              <option value="ru">🇷🇺 Русский (Ruso)</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="pt">🇵🇹 Português</option>
+              <option value="zh">🇨🇳 中文 (Chino)</option>
+            </select>
+          </div>
+
           <div class="button-group">
             <button id="join-btn" class="button">
               <span>🚀</span>
@@ -810,11 +884,15 @@
               <div class="room-status">
                 <div class="status-dot"></div>
                 <span id="room-status-text">Conectando...</span>
+                <span class="language-indicator" id="language-indicator">🌍 ES</span>
               </div>
             </div>
           </div>
           
           <div class="chat-actions">
+            <button id="toggle-translation" class="translation-button active" title="Traducción automática">
+              <span>🌐</span>
+            </button>
             <div class="participants-count" id="participants-count">
               <span>👥</span>
               <span id="participant-number">0</span>
